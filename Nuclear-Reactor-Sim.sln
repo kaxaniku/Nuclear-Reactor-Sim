@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.37411.7
+# Visual Studio Version 18
+VisualStudioVersion = 18.8.12009.203 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuclearAPI", "src\NuclearAPI\NuclearAPI.csproj", "{53FD511B-FB81-F45D-AE99-288874A30746}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuclearDomain", "src\NuclearDomain\NuclearDomain.csproj", "{05AFEF5F-6DA9-CF20-E515-9D4E86F916E0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuclearInfrastructure", "src\NuclearInfrastructure\NuclearInfrastructure.csproj", "{A9BDFA7A-E77A-4651-D17A-AC1FE74A59AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{28F10280-2FB6-46B8-8FAC-2984DDA430E9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{A9BDFA7A-E77A-4651-D17A-AC1FE74A59AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9BDFA7A-E77A-4651-D17A-AC1FE74A59AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9BDFA7A-E77A-4651-D17A-AC1FE74A59AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28F10280-2FB6-46B8-8FAC-2984DDA430E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28F10280-2FB6-46B8-8FAC-2984DDA430E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28F10280-2FB6-46B8-8FAC-2984DDA430E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28F10280-2FB6-46B8-8FAC-2984DDA430E9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

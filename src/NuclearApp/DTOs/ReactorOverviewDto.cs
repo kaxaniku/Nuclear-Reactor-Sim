@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace NuclearDomain.DTOs
+namespace NuclearApp.DTOs
 {
     public class ReactorOverviewDto
     {
