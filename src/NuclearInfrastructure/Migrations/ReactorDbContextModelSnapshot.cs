@@ -44,7 +44,7 @@ namespace NuclearInfrastructure.Migrations
                     b.ToTable("ConfigureCellCommands");
                 });
 
-            modelBuilder.Entity("NuclearDomain.DTOs.CellDto", b =>
+            modelBuilder.Entity("NuclearApp.DTOs.CellDto", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -52,9 +52,8 @@ namespace NuclearInfrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ColumnType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("ColumnType")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("ReactorGridDtoId")
                         .HasColumnType("integer");
@@ -65,44 +64,6 @@ namespace NuclearInfrastructure.Migrations
                     b.Property<int>("Y")
                         .HasColumnType("integer");
 
-                    b.ComplexProperty(typeof(Dictionary<string, object>), "ActivityInfo", "NuclearDomain.DTOs.CellDto.ActivityInfo#ActivityInfo", b1 =>
-                        {
-                            b1.IsRequired();
-
-                            b1.Property<DateTime>("CreateDate")
-                                .HasColumnType("timestamp with time zone");
-
-                            b1.Property<bool>("IsActive")
-                                .HasColumnType("boolean");
-
-                            b1.Property<DateTime?>("UpdateDate")
-                                .HasColumnType("timestamp with time zone");
-                        });
-
-                    b.ComplexProperty(typeof(Dictionary<string, object>), "Telemetry", "NuclearDomain.DTOs.CellDto.Telemetry#CellTelemetryDto", b1 =>
-                        {
-                            b1.IsRequired();
-
-                            b1.Property<double>("LocalPowerOutputMW")
-                                .HasColumnType("double precision");
-
-                            b1.Property<double?>("RodInsertionDepth")
-                                .HasColumnType("double precision");
-
-                            b1.Property<string>("Status")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<double>("SteamQuality")
-                                .HasColumnType("double precision");
-
-                            b1.Property<double>("TemperatureCelsius")
-                                .HasColumnType("double precision");
-
-                            b1.Property<double>("WaterFlowRate")
-                                .HasColumnType("double precision");
-                        });
-
                     b.HasKey("Id");
 
                     b.HasIndex("ReactorGridDtoId");
@@ -110,7 +71,7 @@ namespace NuclearInfrastructure.Migrations
                     b.ToTable("Cells");
                 });
 
-            modelBuilder.Entity("NuclearDomain.DTOs.MoveControlRodCommandDto", b =>
+            modelBuilder.Entity("NuclearApp.DTOs.MoveControlRodCommandDto", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -130,7 +91,7 @@ namespace NuclearInfrastructure.Migrations
                     b.ToTable("MoveControlRodCommands");
                 });
 
-            modelBuilder.Entity("NuclearDomain.DTOs.ReactorGridDto", b =>
+            modelBuilder.Entity("NuclearApp.DTOs.ReactorGridDto", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -148,7 +109,7 @@ namespace NuclearInfrastructure.Migrations
                     b.Property<int>("TotalRows")
                         .HasColumnType("integer");
 
-                    b.ComplexProperty(typeof(Dictionary<string, object>), "ActivityInfo", "NuclearDomain.DTOs.ReactorGridDto.ActivityInfo#ActivityInfo", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "ActivityInfo", "NuclearApp.DTOs.ReactorGridDto.ActivityInfo#ActivityInfo", b1 =>
                         {
                             b1.IsRequired();
 
@@ -167,7 +128,7 @@ namespace NuclearInfrastructure.Migrations
                     b.ToTable("ReactorGrids");
                 });
 
-            modelBuilder.Entity("NuclearDomain.DTOs.ReactorOverviewDto", b =>
+            modelBuilder.Entity("NuclearApp.DTOs.ReactorOverviewDto", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -199,7 +160,7 @@ namespace NuclearInfrastructure.Migrations
                     b.ToTable("ReactorOverviews");
                 });
 
-            modelBuilder.Entity("NuclearDomain.DTOs.ScramReactorCommandDto", b =>
+            modelBuilder.Entity("NuclearApp.DTOs.ScramReactorCommandDto", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -221,14 +182,35 @@ namespace NuclearInfrastructure.Migrations
                     b.ToTable("ScramReactorCommands");
                 });
 
-            modelBuilder.Entity("NuclearDomain.DTOs.CellDto", b =>
+            modelBuilder.Entity("NuclearApp.DTOs.CellDto", b =>
                 {
-                    b.HasOne("NuclearDomain.DTOs.ReactorGridDto", null)
+                    b.HasOne("NuclearApp.DTOs.ReactorGridDto", null)
                         .WithMany("Cells")
                         .HasForeignKey("ReactorGridDtoId");
+
+                    b.OwnsOne("NuclearApp.DTOs.CellTelemetryDto", "Telemetry", b1 =>
+                        {
+                            b1.Property<int>("CellDtoId");
+
+                            b1.Property<double>("TemperatureCelsius");
+
+                            b1.HasKey("CellDtoId");
+
+                            b1.ToTable("Cells");
+
+                            b1
+                                .ToJson("Telemetry")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CellDtoId");
+                        });
+
+                    b.Navigation("Telemetry")
+                        .IsRequired();
                 });
 
-            modelBuilder.Entity("NuclearDomain.DTOs.ReactorGridDto", b =>
+            modelBuilder.Entity("NuclearApp.DTOs.ReactorGridDto", b =>
                 {
                     b.Navigation("Cells");
                 });

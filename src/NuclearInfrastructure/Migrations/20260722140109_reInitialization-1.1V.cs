@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NuclearInfrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class reInitialization11V : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -98,17 +98,9 @@ namespace NuclearInfrastructure.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     X = table.Column<int>(type: "integer", nullable: false),
                     Y = table.Column<int>(type: "integer", nullable: false),
-                    ColumnType = table.Column<string>(type: "text", nullable: false),
+                    ColumnType = table.Column<int>(type: "integer", nullable: false),
                     ReactorGridDtoId = table.Column<int>(type: "integer", nullable: true),
-                    ActivityInfo_CreateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ActivityInfo_IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    ActivityInfo_UpdateDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    Telemetry_LocalPowerOutputMW = table.Column<double>(type: "double precision", nullable: false),
-                    Telemetry_RodInsertionDepth = table.Column<double>(type: "double precision", nullable: true),
-                    Telemetry_Status = table.Column<string>(type: "text", nullable: false),
-                    Telemetry_SteamQuality = table.Column<double>(type: "double precision", nullable: false),
-                    Telemetry_TemperatureCelsius = table.Column<double>(type: "double precision", nullable: false),
-                    Telemetry_WaterFlowRate = table.Column<double>(type: "double precision", nullable: false)
+                    Telemetry = table.Column<string>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>
                 {

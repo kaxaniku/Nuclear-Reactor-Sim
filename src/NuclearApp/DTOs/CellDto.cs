@@ -1,14 +1,33 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace NuclearApp.DTOs;
+
+public enum ColumnType
+{
+    Structural,
+    GraphiteModerator,
+    ControlRods,
+    Reflector,
+    Absorber,
+    Cooler,
+    SteamChannel,
+    FuelChannel
+}
 
 public class CellDto
 {
     [Key]
     public int Id { get; set; }
-    public int X { get; set; } // Adjusted from RowIndex
-    public int Y { get; set; } // Adjusted from ColumnIndex
-    public string ColumnType { get; set; } = null!; // "Fuel", "ControlRod", "Cooler", "Reflector"
+
+    [Required]
+    public int X { get; set; }
+
+    [Required]
+    public int Y { get; set; }
+
+    [Required]
+    public ColumnType ColumnType { get; set; }
+
     public CellTelemetryDto Telemetry { get; set; } = new CellTelemetryDto();
-    public ActivityInfo ActivityInfo { get; set; } = new ActivityInfo();
 }

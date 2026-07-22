@@ -32,7 +32,10 @@ public class ReactorDbContext : DbContext
             type => type.Namespace == "NuclearInfrastructure.Repositories.EntityConfigurations"
         );
 
-        modelBuilder.Owned<CellTelemetryDto>();
+        modelBuilder.Entity<CellDto>(entity =>
+        {
+            entity.OwnsOne(c => c.Telemetry, t => t.ToJson());
+        });
 
         base.OnModelCreating(modelBuilder);
     }
