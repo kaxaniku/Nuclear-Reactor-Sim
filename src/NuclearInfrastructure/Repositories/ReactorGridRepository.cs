@@ -1,5 +1,5 @@
 ﻿using NuclearApp.Interfaces.Repositories;
-using NuclearApp.DTOs;
+using NuclearDomain.DTOs;
 
 namespace NuclearInfrastructure.Repositories;
 

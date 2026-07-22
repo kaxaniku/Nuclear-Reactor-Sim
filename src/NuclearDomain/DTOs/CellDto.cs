@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace NuclearApp.DTOs;
+namespace NuclearDomain.DTOs;
 
 public enum ColumnType
 {

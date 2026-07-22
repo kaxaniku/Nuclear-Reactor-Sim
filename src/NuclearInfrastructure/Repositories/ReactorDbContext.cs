@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
-using NuclearApp.DTOs;
+using NuclearDomain.DTOs;
 
 namespace NuclearInfrastructure.Repositories;
 

@@ -11,8 +11,4 @@
     <ProjectReference Include="..\NuclearDomain\NuclearDomain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Interfaces\Services\" />
-  </ItemGroup>
-
 </Project>

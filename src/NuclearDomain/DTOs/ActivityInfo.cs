@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace NuclearApp.DTOs;
+namespace NuclearDomain.DTOs;
 
 [ComplexType]
 public sealed class ActivityInfo

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using NuclearDomain.DTOs;
 
 public class ConfigureCellCommandDto
 {
@@ -6,5 +7,5 @@ public class ConfigureCellCommandDto
     public Guid Id { get; set; }
     public int X { get; set; }
     public int Y { get; set; }
-    public string NewColumnType { get; set; } = null!; // Changes an empty space into a "Fuel" or "ControlRod" channel
+    public ColumnType NewColumnType { get; set; }
 }

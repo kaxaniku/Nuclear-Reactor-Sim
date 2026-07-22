@@ -1,4 +1,4 @@
-﻿using NuclearApp.DTOs;
+﻿using NuclearDomain.DTOs;
 
 namespace NuclearApp.Interfaces.Repositories;
 

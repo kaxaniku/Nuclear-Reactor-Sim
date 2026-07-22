@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace NuclearApp.DTOs
+namespace NuclearDomain.DTOs
 {
     public class MoveControlRodCommandDto
     {
