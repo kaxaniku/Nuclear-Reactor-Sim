@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using NuclearDomain.DTOs;
+
+namespace NuclearDomain.DTOs;
 
 public class ConfigureCellCommandDto
 {

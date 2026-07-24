@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NuclearAPI\NuclearAPI.csproj" />
     <ProjectReference Include="..\NuclearDomain\NuclearDomain.csproj" />
   </ItemGroup>
 

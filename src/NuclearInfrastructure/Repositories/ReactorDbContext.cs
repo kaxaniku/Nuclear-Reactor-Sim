@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
@@ -9,12 +10,8 @@ namespace NuclearInfrastructure.Repositories;
 public class ReactorDbContext : DbContext
 {
     public ReactorDbContext(DbContextOptions<ReactorDbContext> options) : base(options) { }
-    public DbSet<ReactorOverviewDto> ReactorOverviews { get; set; }
     public DbSet<CellDto> Cells { get; set; }
-    public DbSet<ConfigureCellCommandDto> ConfigureCellCommands { get; set; }
-    public DbSet<MoveControlRodCommandDto> MoveControlRodCommands { get; set; }
     public DbSet<ReactorGridDto> ReactorGrids { get; set; }
-    public DbSet<ScramReactorCommandDto> ScramReactorCommands { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -22,11 +19,13 @@ public class ReactorDbContext : DbContext
         {
             optionsBuilder.UseNpgsql(ConfigurationManager.ConnectionString);
         }
+        optionsBuilder.UseSnakeCaseNamingConvention();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(ReactorDbContext).Assembly,
             type => type.Namespace == "NuclearInfrastructure.Repositories.EntityConfigurations"
@@ -34,10 +33,13 @@ public class ReactorDbContext : DbContext
 
         modelBuilder.Entity<CellDto>(entity =>
         {
-            entity.OwnsOne(c => c.Telemetry, t => t.ToJson());
+            entity.Property(c => c.Telemetry)
+                  .HasColumnType("jsonb")
+                  .HasConversion(
+                      v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                      v => JsonSerializer.Deserialize<CellTelemetryDto>(v, (JsonSerializerOptions?)null) ?? new CellTelemetryDto()
+                  );
         });
-
-        base.OnModelCreating(modelBuilder);
     }
 }
 
