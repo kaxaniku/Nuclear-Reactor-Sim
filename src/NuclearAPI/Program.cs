@@ -18,7 +18,7 @@ public class Program
 
         // Add services to the container.
         Log.Logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(builder.Configuration.GetSection("Serilog"))
+            .ReadFrom.Configuration(builder.Configuration)
             .Enrich.WithExceptionDetails()
             .CreateLogger();
 

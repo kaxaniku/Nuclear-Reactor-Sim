@@ -15,6 +15,7 @@ public enum SteamType
 [JsonDerivedType(typeof(StructuralTelemetryDto), typeDiscriminator: "structural")]
 [JsonDerivedType(typeof(GraphiteModeratorTelemetryDto), typeDiscriminator: "moderator")]
 [JsonDerivedType(typeof(ControlRodsTelemetryDto), typeDiscriminator: "controlRods")]
+[JsonDerivedType(typeof(ReflectorTelemetryDto), typeDiscriminator: "reflector")]
 [JsonDerivedType(typeof(CoolerTelemetryDto), typeDiscriminator: "cooler")]
 [JsonDerivedType(typeof(SteamChannelTelemetryDto), typeDiscriminator: "steam")]
 [JsonDerivedType(typeof(FuelChannelTelemetryDto), typeDiscriminator: "fuel")]

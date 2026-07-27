@@ -40,6 +40,6 @@ public static class TelemetryFactory
         ColumnType.GraphiteModerator => new GraphiteModeratorTelemetryDto { TemperatureCelsius = 20.0 },
         ColumnType.Reflector => new ReflectorTelemetryDto { TemperatureCelsius = 20.0 },
         ColumnType.Structural => new StructuralTelemetryDto { TemperatureCelsius = 20.0 },
-        _ => new CellTelemetry { TemperatureCelsius = 20.0 }
+        _ => throw new ArgumentOutOfRangeException(nameof(columnType), columnType, null)
     };
 }
