@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Nuclear_Reactor_Sim.Models;
+using NuclearApp.DTOs;
 using NuclearApp.Interfaces.Services;
-using NuclearDomain.DTOs;
+using NuclearDomain.Entities;
 
 namespace Nuclear_Reactor_Sim.Controllers;
 

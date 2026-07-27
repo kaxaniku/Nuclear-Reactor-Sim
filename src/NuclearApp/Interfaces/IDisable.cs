@@ -1,4 +1,4 @@
-﻿using NuclearDomain.DTOs;
+﻿using NuclearDomain.Entities;
 
 namespace NuclearApp.Interfaces;
 

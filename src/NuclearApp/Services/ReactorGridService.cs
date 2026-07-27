@@ -1,6 +1,7 @@
-﻿using NuclearApp.Interfaces.Repositories;
+﻿using NuclearApp.DTOs;
+using NuclearApp.Interfaces.Repositories;
 using NuclearApp.Interfaces.Services;
-using NuclearDomain.DTOs;
+using NuclearDomain.Entities;
 using NuclearDomain.Factories;
 
 namespace NuclearApp.Services
@@ -15,7 +16,7 @@ namespace NuclearApp.Services
         }
 
         // Read all cells in the reactor grid
-        public async Task<List<CellDto>> GetAllCellsAsync(int reactorGridId, CancellationToken cancellationToken = default)
+        public async Task<List<Cell>> GetAllCellsAsync(int reactorGridId, CancellationToken cancellationToken = default)
         {
             var grids = await _unitOfWork.ReactorGridRepository.QueryAsync(
                 g => g.Id == reactorGridId,
@@ -29,7 +30,7 @@ namespace NuclearApp.Services
             return reactorGrid.Cells;
         }
 
-        public async Task<CellDto> GetCellByIdAsync(int reactorGridId, int cellId, CancellationToken cancellationToken = default)
+        public async Task<Cell> GetCellByIdAsync(int reactorGridId, int cellId, CancellationToken cancellationToken = default)
         {
             var grids = await _unitOfWork.ReactorGridRepository.QueryAsync(
                 g => g.Id == reactorGridId,
@@ -43,7 +44,7 @@ namespace NuclearApp.Services
             return cell;
         }
 
-        public async Task<CellDto> GetCellByCoordinatesAsync(int reactorGridId, int x, int y, CancellationToken cancellationToken = default)
+        public async Task<Cell> GetCellByCoordinatesAsync(int reactorGridId, int x, int y, CancellationToken cancellationToken = default)
         {
             var grids = await _unitOfWork.ReactorGridRepository.QueryAsync(
                 g => g.Id == reactorGridId,
@@ -65,13 +66,13 @@ namespace NuclearApp.Services
             return reactorGrid.Id;
         }
 
-        public async Task<IEnumerable<ReactorGridDto>> GetAllReactorGridsAsync(CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<ReactorGrid>> GetAllReactorGridsAsync(CancellationToken cancellationToken = default)
         {
             var reactorsGrids = await _unitOfWork.ReactorGridRepository.QueryAsync(r => r.ActivityInfo.IsActive, cancellationToken);
             return reactorsGrids;
         }
 
-        public async Task<ReactorGridDto> GetReactorGridByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<ReactorGrid> GetReactorGridByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             var reactorGrid = await _unitOfWork.ReactorGridRepository.GetByIdAsync(id, cancellationToken) ??
                 throw new KeyNotFoundException($"Reactor grid with ID {id} not found.");
@@ -95,7 +96,7 @@ namespace NuclearApp.Services
                 throw new ArgumentException("Cell already exists at the specified coordinates.");
             }
 
-            var cell = new CellDto
+            var cell = new Cell
             {
                 X = command.X,
                 Y = command.Y,
@@ -158,10 +159,10 @@ namespace NuclearApp.Services
 
         public async Task<int> CreateReactorAsync(string name, CancellationToken cancellationToken = default)
         {
-            var reactorGrid = new ReactorGridDto
+            var reactorGrid = new ReactorGrid
             {
                 Name = name,
-                Cells = new List<CellDto>(),
+                Cells = new List<Cell>(),
                 TotalRows = 0,
                 TotalColumns = 0
             };

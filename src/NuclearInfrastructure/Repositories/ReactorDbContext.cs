@@ -3,15 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
-using NuclearDomain.DTOs;
+using NuclearDomain.Entities;
 
 namespace NuclearInfrastructure.Repositories;
 
 public class ReactorDbContext : DbContext
 {
     public ReactorDbContext(DbContextOptions<ReactorDbContext> options) : base(options) { }
-    public DbSet<CellDto> Cells { get; set; }
-    public DbSet<ReactorGridDto> ReactorGrids { get; set; }
+    public DbSet<Cell> Cells { get; set; }
+    public DbSet<ReactorGrid> ReactorGrids { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -31,17 +31,17 @@ public class ReactorDbContext : DbContext
             type => type.Namespace == "NuclearInfrastructure.Repositories.EntityConfigurations"
         );
 
-        modelBuilder.Entity<CellDto>(entity =>
+        modelBuilder.Entity<Cell>(entity =>
         {
             entity.Property(c => c.Telemetry)
                   .HasColumnType("jsonb")
                   .HasConversion(
                       v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                      v => JsonSerializer.Deserialize<CellTelemetryDto>(v, (JsonSerializerOptions?)null) ?? new CellTelemetryDto()
+                      v => JsonSerializer.Deserialize<CellTelemetry>(v, (JsonSerializerOptions?)null) ?? new CellTelemetry()
                   );
         });
 
-        modelBuilder.Entity<ReactorGridDto>()
+        modelBuilder.Entity<ReactorGrid>()
             .HasIndex(r => r.Name)
             .IsUnique();
     }

@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace NuclearDomain.DTOs;
+namespace NuclearDomain.Entities;
 
 public enum ColumnType
 {
@@ -16,7 +16,7 @@ public enum ColumnType
     FuelChannel = 7
 }
 
-public class CellDto
+public class Cell
 {
     [Key]
     public int Id { get; set; }
@@ -30,11 +30,11 @@ public class CellDto
     [Required]
     public ColumnType ColumnType { get; set; }
 
-    public CellTelemetryDto Telemetry { get; set; } = new CellTelemetryDto();
+    public CellTelemetry Telemetry { get; set; } = new CellTelemetry();
 
     public int ReactorGridId { get; set; }
 
     [ForeignKey(nameof(ReactorGridId))]
     [JsonIgnore]
-    public ReactorGridDto ReactorGrid { get; set; } = null!;
+    public ReactorGrid ReactorGrid { get; set; } = null!;
 }

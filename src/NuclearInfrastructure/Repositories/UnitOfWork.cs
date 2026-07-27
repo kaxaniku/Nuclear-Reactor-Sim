@@ -11,17 +11,9 @@ public sealed class UnitOfWork : IUnitOfWork
 
     private readonly Lazy<IReactorGridRepository> _reactorGrid;
     private readonly Lazy<ICellRepository> _cell;
-    private readonly Lazy<IReactorOverviewRepository> _reactorOverview;
-    private readonly Lazy<IConfigureCellCommandRepository> _configureCellCommand;
-    private readonly Lazy<IMoveControlRodCommandRepository> _moveControlRodCommand;
-    private readonly Lazy<IScramReactorCommandRepository> _scramReactorCommand;
 
     public IReactorGridRepository ReactorGridRepository => CheckDisposedAndGet(_reactorGrid);
     public ICellRepository CellRepository => CheckDisposedAndGet(_cell);
-    public IReactorOverviewRepository ReactorOverviewRepository => CheckDisposedAndGet(_reactorOverview);
-    public IConfigureCellCommandRepository ConfigureCellCommandRepository => CheckDisposedAndGet(_configureCellCommand);
-    public IMoveControlRodCommandRepository MoveControlRodCommandRepository => CheckDisposedAndGet(_moveControlRodCommand);
-    public IScramReactorCommandRepository ScramReactorCommandRepository => CheckDisposedAndGet(_scramReactorCommand);
 
     public UnitOfWork(ReactorDbContext context)
     {
@@ -29,10 +21,6 @@ public sealed class UnitOfWork : IUnitOfWork
 
         _reactorGrid = new Lazy<IReactorGridRepository>(() => new ReactorGridRepository(_context));
         _cell = new Lazy<ICellRepository>(() => new CellRepository(_context));
-        _reactorOverview = new Lazy<IReactorOverviewRepository>(() => new ReactorOverviewRepository(_context));
-        _configureCellCommand = new Lazy<IConfigureCellCommandRepository>(() => new ConfigureCellCommandRepository(_context));
-        _moveControlRodCommand = new Lazy<IMoveControlRodCommandRepository>(() => new MoveControlRodCommandRepository(_context));
-        _scramReactorCommand = new Lazy<IScramReactorCommandRepository>(() => new ScramReactorCommandRepository(_context));
 
     }
 
@@ -152,18 +140,6 @@ public sealed class UnitOfWork : IUnitOfWork
 
             if (_cell.IsValueCreated)
                 _cell.Value.Dispose();
-
-            if (_reactorOverview.IsValueCreated)
-                _reactorOverview.Value.Dispose();
-
-            if (_configureCellCommand.IsValueCreated)
-                _configureCellCommand.Value.Dispose();
-
-            if (_moveControlRodCommand.IsValueCreated)
-                _moveControlRodCommand.Value.Dispose();
-
-            if (_scramReactorCommand.IsValueCreated)
-                _scramReactorCommand.Value.Dispose();
         }
 
         _disposed = true;
@@ -184,18 +160,6 @@ public sealed class UnitOfWork : IUnitOfWork
 
             if (_cell.IsValueCreated)
                 await _cell.Value.DisposeAsync();
-
-            if (_reactorOverview.IsValueCreated)
-                await _reactorOverview.Value.DisposeAsync();
-
-            if (_configureCellCommand.IsValueCreated)
-                await _configureCellCommand.Value.DisposeAsync();
-
-            if (_moveControlRodCommand.IsValueCreated)
-                await _moveControlRodCommand.Value.DisposeAsync();
-
-            if (_scramReactorCommand.IsValueCreated)
-                await _scramReactorCommand.Value.DisposeAsync();
 
 
             _disposed = true;

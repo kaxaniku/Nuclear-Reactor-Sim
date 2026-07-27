@@ -1,5 +1,6 @@
-﻿using NuclearApp.Interfaces.Repositories;
-using NuclearDomain.DTOs;
+﻿using NuclearApp.DTOs;
+using NuclearApp.Interfaces.Repositories;
+using NuclearDomain.Entities;
 
 namespace NuclearApp.Services;
 
@@ -52,7 +53,7 @@ public class CellService
         if (cell.ColumnType != ColumnType.GraphiteModerator)
             throw new InvalidOperationException("The specified cell does not contain a graphite moderator.");
 
-        var telemetry = cell.Telemetry as CellTelemetryDto;
+        var telemetry = cell.Telemetry as CellTelemetry;
         if (telemetry == null)
             throw new InvalidOperationException("Invalid telemetry type for graphite moderator.");
 

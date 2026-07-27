@@ -1,9 +1,9 @@
 ﻿using NuclearApp.Interfaces.Repositories;
-using NuclearDomain.DTOs;
+using NuclearDomain.Entities;
 
 namespace NuclearInfrastructure.Repositories;
 
-internal class CellRepository : BaseRepository<CellDto>, ICellRepository
+internal class CellRepository : BaseRepository<Cell>, ICellRepository
 {
     public CellRepository(ReactorDbContext context) : base(context) { }
 }

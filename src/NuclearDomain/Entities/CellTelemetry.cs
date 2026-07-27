@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace NuclearDomain.DTOs;
+namespace NuclearDomain.Entities;
 
 public enum SteamType
 {
@@ -11,7 +11,7 @@ public enum SteamType
 }
 
 
-[JsonDerivedType(typeof(CellTelemetryDto), typeDiscriminator: "base")]
+[JsonDerivedType(typeof(CellTelemetry), typeDiscriminator: "base")]
 [JsonDerivedType(typeof(StructuralTelemetryDto), typeDiscriminator: "structural")]
 [JsonDerivedType(typeof(GraphiteModeratorTelemetryDto), typeDiscriminator: "moderator")]
 [JsonDerivedType(typeof(ControlRodsTelemetryDto), typeDiscriminator: "controlRods")]
@@ -19,43 +19,43 @@ public enum SteamType
 [JsonDerivedType(typeof(SteamChannelTelemetryDto), typeDiscriminator: "steam")]
 [JsonDerivedType(typeof(FuelChannelTelemetryDto), typeDiscriminator: "fuel")]
 [JsonDerivedType(typeof(AbsorberTelemetryDto), typeDiscriminator: "absorber")]
-public class CellTelemetryDto
+public class CellTelemetry
 {
     public double TemperatureCelsius { get; set; }   // Crucial for fuel and coolant channels
 }
 
-public class StructuralTelemetryDto : CellTelemetryDto
+public class StructuralTelemetryDto : CellTelemetry
 {
     // Add any specific structural telemetry fields here (if needed)
 }
 
-public class GraphiteModeratorTelemetryDto : CellTelemetryDto
+public class GraphiteModeratorTelemetryDto : CellTelemetry
 {
     // No additional fields required beyond the base class
 }
 
-public class ControlRodsTelemetryDto : CellTelemetryDto
+public class ControlRodsTelemetryDto : CellTelemetry
 {
     public double InsertionLevel { get; set; }     // Percentage inserted 0.0 - 1.0
 }
 
-public class ReflectorTelemetryDto : CellTelemetryDto
+public class ReflectorTelemetryDto : CellTelemetry
 {
     // No additional fields required beyond the base class
 }
 
-public class AbsorberTelemetryDto : CellTelemetryDto
+public class AbsorberTelemetryDto : CellTelemetry
 {
     public double AbsorptionLevel { get; set; }   // Percentage absorbed 0.0 - 1.0
 }
 
-public class CoolerTelemetryDto : CellTelemetryDto
+public class CoolerTelemetryDto : CellTelemetry
 {
     public double WaterFlowRate { get; set; }       // Liters/sec through the individual channel
     public double CoolantLevelPercent { get; set; } // Percentage of coolant remaining (if needed)
 }
 
-public class SteamChannelTelemetryDto : CellTelemetryDto
+public class SteamChannelTelemetryDto : CellTelemetry
 {
     public double SteamGenerationRateMW { get; set; }
     public double PressureBar { get; set; }
@@ -63,7 +63,7 @@ public class SteamChannelTelemetryDto : CellTelemetryDto
     public SteamType SteamType { get; set; }
 }
 
-public class FuelChannelTelemetryDto : CellTelemetryDto
+public class FuelChannelTelemetryDto : CellTelemetry
 {
     public double NeutronFlux { get; set; }       // neutron flux rate
     public double LocalPowerOutputMW { get; set; }   // local thermal power generation

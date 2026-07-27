@@ -1,10 +1,10 @@
 ﻿namespace NuclearDomain.Factories;
 
-using NuclearDomain.DTOs;
+using NuclearDomain.Entities;
 
 public static class TelemetryFactory
 {
-    public static CellTelemetryDto CreateDefault(ColumnType columnType) => columnType switch
+    public static CellTelemetry CreateDefault(ColumnType columnType) => columnType switch
     {
         ColumnType.FuelChannel => new FuelChannelTelemetryDto
         {
@@ -40,6 +40,6 @@ public static class TelemetryFactory
         ColumnType.GraphiteModerator => new GraphiteModeratorTelemetryDto { TemperatureCelsius = 20.0 },
         ColumnType.Reflector => new ReflectorTelemetryDto { TemperatureCelsius = 20.0 },
         ColumnType.Structural => new StructuralTelemetryDto { TemperatureCelsius = 20.0 },
-        _ => new CellTelemetryDto { TemperatureCelsius = 20.0 }
+        _ => new CellTelemetry { TemperatureCelsius = 20.0 }
     };
 }

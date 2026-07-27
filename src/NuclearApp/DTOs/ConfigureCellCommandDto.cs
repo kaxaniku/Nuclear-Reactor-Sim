@@ -1,12 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using NuclearDomain.Entities;
 
-namespace NuclearDomain.DTOs;
+namespace NuclearApp.DTOs;
 
-public class MoveControlRodCommandDto
+public class ConfigureCellCommandDto
 {
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
     public int X { get; set; }
     public int Y { get; set; }
-    public double TargetInsertionPercentage { get; set; } // 0.0 (fully extracted) to 100.0 (fully inserted)
+    public ColumnType NewColumnType { get; set; }
 }

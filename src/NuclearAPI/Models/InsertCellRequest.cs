@@ -1,6 +1,4 @@
-﻿using NuclearDomain.DTOs;
-
-namespace Nuclear_Reactor_Sim.Models;
+﻿namespace Nuclear_Reactor_Sim.Models;
 
 public class InsertCellRequest
 {

@@ -1,7 +1,7 @@
-﻿using NuclearDomain.DTOs;
+﻿using NuclearDomain.Entities;
 
 namespace NuclearApp.Interfaces.Repositories;
 
-public interface IReactorGridRepository : IBaseRepository<ReactorGridDto>
+public interface IReactorGridRepository : IBaseRepository<ReactorGrid>
 {
 }
