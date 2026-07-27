@@ -40,6 +40,10 @@ public class ReactorDbContext : DbContext
                       v => JsonSerializer.Deserialize<CellTelemetryDto>(v, (JsonSerializerOptions?)null) ?? new CellTelemetryDto()
                   );
         });
+
+        modelBuilder.Entity<ReactorGridDto>()
+            .HasIndex(r => r.Name)
+            .IsUnique();
     }
 }
 

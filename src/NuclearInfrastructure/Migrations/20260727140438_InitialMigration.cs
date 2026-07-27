@@ -40,22 +40,29 @@ namespace NuclearInfrastructure.Migrations
                     y = table.Column<int>(type: "integer", nullable: false),
                     column_type = table.Column<int>(type: "integer", nullable: false),
                     telemetry = table.Column<string>(type: "jsonb", nullable: false),
-                    reactor_grid_dto_id = table.Column<int>(type: "integer", nullable: true)
+                    reactor_grid_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_cells", x => x.id);
                     table.ForeignKey(
-                        name: "fk_cells_reactor_grids_reactor_grid_dto_id",
-                        column: x => x.reactor_grid_dto_id,
+                        name: "fk_cells_reactor_grids_reactor_grid_id",
+                        column: x => x.reactor_grid_id,
                         principalTable: "reactor_grids",
-                        principalColumn: "id");
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_cells_reactor_grid_dto_id",
+                name: "ix_cells_reactor_grid_id",
                 table: "cells",
-                column: "reactor_grid_dto_id");
+                column: "reactor_grid_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_reactor_grids_name",
+                table: "reactor_grids",
+                column: "name",
+                unique: true);
         }
 
         /// <inheritdoc />

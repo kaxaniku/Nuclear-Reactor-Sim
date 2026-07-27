@@ -36,9 +36,9 @@ namespace NuclearInfrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("column_type");
 
-                    b.Property<int?>("ReactorGridDtoId")
+                    b.Property<int>("ReactorGridId")
                         .HasColumnType("integer")
-                        .HasColumnName("reactor_grid_dto_id");
+                        .HasColumnName("reactor_grid_id");
 
                     b.Property<string>("Telemetry")
                         .IsRequired()
@@ -56,8 +56,8 @@ namespace NuclearInfrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_cells");
 
-                    b.HasIndex("ReactorGridDtoId")
-                        .HasDatabaseName("ix_cells_reactor_grid_dto_id");
+                    b.HasIndex("ReactorGridId")
+                        .HasDatabaseName("ix_cells_reactor_grid_id");
 
                     b.ToTable("cells", (string)null);
                 });
@@ -104,15 +104,23 @@ namespace NuclearInfrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_reactor_grids");
 
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_reactor_grids_name");
+
                     b.ToTable("reactor_grids", (string)null);
                 });
 
             modelBuilder.Entity("NuclearDomain.DTOs.CellDto", b =>
                 {
-                    b.HasOne("NuclearDomain.DTOs.ReactorGridDto", null)
+                    b.HasOne("NuclearDomain.DTOs.ReactorGridDto", "ReactorGrid")
                         .WithMany("Cells")
-                        .HasForeignKey("ReactorGridDtoId")
-                        .HasConstraintName("fk_cells_reactor_grids_reactor_grid_dto_id");
+                        .HasForeignKey("ReactorGridId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_cells_reactor_grids_reactor_grid_id");
+
+                    b.Navigation("ReactorGrid");
                 });
 
             modelBuilder.Entity("NuclearDomain.DTOs.ReactorGridDto", b =>

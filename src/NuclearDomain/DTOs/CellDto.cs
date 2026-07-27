@@ -1,18 +1,19 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace NuclearDomain.DTOs;
 
 public enum ColumnType
 {
-    Structural,
-    GraphiteModerator,
-    ControlRods,
-    Reflector,
-    Absorber,
-    Cooler,
-    SteamChannel,
-    FuelChannel
+    Structural = 0,
+    GraphiteModerator = 1,
+    ControlRods = 2,
+    Reflector = 3,
+    Absorber = 4,
+    Cooler = 5,
+    SteamChannel = 6,
+    FuelChannel = 7
 }
 
 public class CellDto
@@ -30,4 +31,10 @@ public class CellDto
     public ColumnType ColumnType { get; set; }
 
     public CellTelemetryDto Telemetry { get; set; } = new CellTelemetryDto();
+
+    public int ReactorGridId { get; set; }
+
+    [ForeignKey(nameof(ReactorGridId))]
+    [JsonIgnore]
+    public ReactorGridDto ReactorGrid { get; set; } = null!;
 }

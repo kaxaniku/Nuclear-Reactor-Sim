@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Nuclear_Reactor_Sim.Extensions;
 using Nuclear_Reactor_Sim.Middlewares;
+using NuclearApp.Interfaces.Repositories;
+using NuclearApp.Interfaces.Services;
+using NuclearApp.Services;
 using NuclearInfrastructure.Repositories;
 using Serilog;
 using Serilog.Exceptions;
@@ -34,6 +37,10 @@ public class Program
                 npgsqlOptions => npgsqlOptions.MigrationsAssembly(typeof(ReactorDbContext).Assembly.FullName)
             )
             .UseSnakeCaseNamingConvention());
+
+        //Add Service interfaces
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+        builder.Services.AddScoped<IReactorGridService, ReactorGridService>();
 
         builder.Services.AddCors(options =>
         {
