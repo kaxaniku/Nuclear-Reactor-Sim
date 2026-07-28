@@ -24,7 +24,7 @@ public class ReactorGridController : ControllerBase
         return Ok(cells);
     }
 
-    [HttpGet("cellById")]
+    [HttpGet("reactorGrid/{reactorGridId:int}/cells/{cellId:int}")]
     public async Task<IActionResult> GetCellByIdAsync(int reactorGridId, int cellId, CancellationToken cancellationToken = default)
     {
         var cell = await _reactorGridService.GetCellByIdAsync(reactorGridId, cellId, cancellationToken);
@@ -45,7 +45,7 @@ public class ReactorGridController : ControllerBase
         return Ok(reactorId);
     }
 
-    [HttpGet("getReactorById")]
+    [HttpGet("reactor/{reactorId:int}")]
     public async Task<IActionResult> GetReactorByIdAsync(int reactorId, CancellationToken cancellationToken = default)
     {
         var reactor = await _reactorGridService.GetReactorGridByIdAsync(reactorId, cancellationToken);
@@ -70,8 +70,10 @@ public class ReactorGridController : ControllerBase
             NewColumnType = (ColumnType)request.NewColumnType
         };
 
-        await _reactorGridService.InsertCellAsync(request.ReactorGridId, command, cancellationToken);
-        return Ok();
+        var cell = await _reactorGridService.InsertCellAsync(request.ReactorGridId, command, cancellationToken);
+        var locationUri = $"/api/reactorGrid/{request.ReactorGridId}/cells/{cell.Id}";
+
+        return Created(locationUri, cell);
     }
 
     [HttpPut("updateCell")]
@@ -84,21 +86,54 @@ public class ReactorGridController : ControllerBase
             Y = request.Y,
             NewColumnType = (ColumnType)request.NewColumnType
         };
-        await _reactorGridService.UpdateCellAsync(request.ReactorGridId, command, cancellationToken);
-        return Ok();
+        var updatedCell = await _reactorGridService.UpdateCellAsync(request.ReactorGridId, command, cancellationToken);
+        return Ok(updatedCell);
     }
 
     [HttpDelete("deleteCell")]
     public async Task<IActionResult> DeleteCellAsync([FromBody] DeleteCellRequest request, CancellationToken cancellationToken = default)
     {
         await _reactorGridService.DeleteCellAsync(request.ReactorGridId, request.X, request.Y, cancellationToken);
-        return Ok();
+        return NoContent();
+    }
+
+    [HttpDelete("deleteReactorById")]
+    public async Task<IActionResult> DeleteReactorByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        await _reactorGridService.DeleteReactorAsync(id, cancellationToken);
+        return NoContent();
     }
 
     [HttpPost("createReactorGrid")]
     public async Task<IActionResult> CreateReactorGridAsync(string name, CancellationToken cancellationToken = default)
     {
-        await _reactorGridService.CreateReactorAsync(name, cancellationToken);
-        return Ok();
+        var reactor = await _reactorGridService.CreateReactorAsync(name, cancellationToken);
+        var locationUri = $"/api/reactor/{reactor.Id}";
+
+        return Created(locationUri, reactor);
+    }
+
+    [HttpGet("get2DGrid")]
+    public async Task<IActionResult> Get2DGridAsync(int reactorId, CancellationToken cancellationToken = default)
+    {
+        var grid = await _reactorGridService.Get2DGridDesignAsync(reactorId, cancellationToken);
+        return Ok(grid);
+    }
+
+    [HttpGet("get2DCoordinates")]
+    public async Task<IActionResult> Get2DCoordinatesAsync(int reactorId, CancellationToken cancellationToken = default)
+    {
+        var coordinates = await _reactorGridService.Get2DGridWithCoordinatesAsync(reactorId, cancellationToken);
+        return Ok(coordinates);
+    }
+
+    [HttpGet("validateReactor/{reactorId:int}")]
+    public async Task<IActionResult> ValidateReactorAsync(int reactorId, CancellationToken cancellationToken = default)
+    {
+        var isValid = await _reactorGridService.IsReactorValidAsync(reactorId, cancellationToken);
+
+        if (isValid)
+            return Ok(new { IsValid = true });
+        return BadRequest(new { IsValid = false });
     }
 }
