@@ -3,12 +3,12 @@ using NuclearApp.Interfaces.Repositories;
 
 namespace NuclearUnitTests;
 
-public abstract class CommandHandlerBaseTests
+public abstract class QueryHandlerBaseTests
 {
     protected readonly Mock<IUnitOfWork> _unitOfWorkMock;
     protected readonly CancellationToken _cancellationToken;
 
-    protected CommandHandlerBaseTests()
+    protected QueryHandlerBaseTests()
     {
         _unitOfWorkMock = new Mock<IUnitOfWork>
         {

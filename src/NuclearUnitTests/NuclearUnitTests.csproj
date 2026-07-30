@@ -20,10 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ReactorGridUTests\QueryTests\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\NuclearApp\NuclearApp.csproj" />
   </ItemGroup>
 
