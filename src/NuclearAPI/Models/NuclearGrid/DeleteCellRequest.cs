@@ -1,4 +1,4 @@
-﻿namespace Nuclear_Reactor_Sim.Models;
+﻿namespace Nuclear_Reactor_Sim.Models.NuclearGrid;
 
 public class DeleteCellRequest
 {

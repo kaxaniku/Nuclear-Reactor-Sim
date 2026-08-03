@@ -1,6 +1,6 @@
-﻿namespace Nuclear_Reactor_Sim.Models;
+﻿namespace Nuclear_Reactor_Sim.Models.NuclearGrid;
 
-public class UpdateCellRequest
+public class InsertCellRequest
 {
     public int ReactorGridId { get; set; }
     public int X { get; set; }

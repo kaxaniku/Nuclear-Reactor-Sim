@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Nuclear_Reactor_Sim.Models;
+using Nuclear_Reactor_Sim.Models.NuclearGrid;
 using NuclearApp.DTOs;
 using NuclearApp.Features.ReactorGrids;
 using NuclearDomain.Entities;
