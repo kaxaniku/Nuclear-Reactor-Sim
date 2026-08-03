@@ -1,0 +1,41 @@
+﻿using MediatR;
+using NuclearApp.Interfaces.Repositories;
+using NuclearDomain.Entities;
+
+namespace NuclearApp.Features.GridCells.Handlers.CommandHandlers;
+
+public class ConfigureCoolerCommandHandler : IRequestHandler<ConfigureCoolerCommand>
+{
+    private readonly IUnitOfWork _unitOfWork;
+
+    public ConfigureCoolerCommandHandler(IUnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+    }
+
+    public async Task Handle(ConfigureCoolerCommand request, CancellationToken cancellationToken)
+    {
+        var reactorGrid = await _unitOfWork.ReactorGridRepository.GetByIdAsync(request.ReactorGridId, cancellationToken);
+        if (reactorGrid == null)
+            throw new InvalidOperationException($"Reactor grid with ID {request.ReactorGridId} not found.");
+
+        var cell = reactorGrid.Cells.FirstOrDefault(c => c.X == request.X && c.Y == request.Y);
+        if (cell == null)
+            throw new InvalidOperationException($"Cell at position ({request.X}, {request.Y}) not found in reactor grid.");
+
+        if (cell.ColumnType != ColumnType.Cooler)
+            throw new InvalidOperationException("The specified cell does not contain a cooler.");
+
+        var telemetry = cell.Telemetry as CoolerTelemetryDto;
+        if (telemetry == null)
+            throw new InvalidOperationException("Invalid telemetry type for cooler.");
+
+        if (request.CoolantLevelPercent < 0 || request.CoolantLevelPercent > 100)
+            throw new ArgumentOutOfRangeException(nameof(request.CoolantLevelPercent), "Coolant level percentage must be between 0 and 100.");
+
+        telemetry.WaterFlowRate = request.WaterFlowRate;
+        telemetry.CoolantLevelPercent = request.CoolantLevelPercent / 100.0;
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+}

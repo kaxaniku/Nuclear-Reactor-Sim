@@ -1,0 +1,41 @@
+﻿using MediatR;
+using NuclearApp.DTOs;
+using NuclearApp.Interfaces.Repositories;
+using NuclearDomain.Entities;
+
+namespace NuclearApp.Features.GridCells.Handlers.CommandHandlers;
+
+public class MoveControlRodCommandHandler : IRequestHandler<MoveControlRodCommand>
+{
+    private readonly IUnitOfWork _unitOfWork;
+
+    public MoveControlRodCommandHandler(IUnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+    }
+
+    public async Task Handle(MoveControlRodCommand request, CancellationToken cancellationToken)
+    {
+        var reactorGrid = await _unitOfWork.ReactorGridRepository.GetByIdAsync(request.ReactorGridId, cancellationToken);
+        if (reactorGrid == null)
+            throw new InvalidOperationException($"Reactor grid with ID {request.ReactorGridId} not found.");
+
+        var cell = reactorGrid.Cells.FirstOrDefault(c => c.X == request.X && c.Y == request.Y);
+        if (cell == null)
+            throw new InvalidOperationException($"Cell at position ({request.X}, {request.Y}) not found in reactor grid.");
+
+        if (cell.ColumnType != ColumnType.ControlRods)
+            throw new InvalidOperationException("The specified cell does not contain control rods.");
+
+        var telemetry = cell.Telemetry as ControlRodsTelemetryDto;
+        if (telemetry == null)
+            throw new InvalidOperationException("Invalid telemetry type for control rods.");
+
+        if (request.TargetInsertionPercentage < 0 || request.TargetInsertionPercentage > 100)
+            throw new ArgumentOutOfRangeException(nameof(request.TargetInsertionPercentage), "Target insertion percentage must be between 0 and 100.");
+
+        telemetry.InsertionLevel = request.TargetInsertionPercentage / 100.0;
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+}

@@ -14,4 +14,8 @@
     <ProjectReference Include="..\NuclearDomain\NuclearDomain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\GridCells\Handlers\QueryHandlers\" />
+  </ItemGroup>
+
 </Project>
