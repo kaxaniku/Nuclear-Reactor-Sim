@@ -30,10 +30,13 @@ public class SetGraphiteModeratorTemperatureCommandHandler : IRequestHandler<Set
         if (cell.ColumnType != ColumnType.GraphiteModerator)
             throw new InvalidOperationException("The specified cell does not contain a graphite moderator.");
 
-        var telemetry = cell.Telemetry as CellTelemetry
+        var telemetry = cell.Telemetry as GraphiteModeratorTelemetryDto
             ?? throw new InvalidOperationException("Invalid telemetry type for graphite moderator.");
 
-        telemetry.TemperatureCelsius = request.TemperatureCelsius;
+        cell.Telemetry = new GraphiteModeratorTelemetryDto
+        {
+            TemperatureCelsius = telemetry.TemperatureCelsius
+        };
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }

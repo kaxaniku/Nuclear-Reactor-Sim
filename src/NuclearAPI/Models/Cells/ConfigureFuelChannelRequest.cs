@@ -1,4 +1,6 @@
-﻿namespace Nuclear_Reactor_Sim.Models.Cells;
+﻿using NuclearDomain.Entities;
+
+namespace Nuclear_Reactor_Sim.Models.Cells;
 
 public class ConfigureFuelChannelRequest
 {
@@ -7,5 +9,5 @@ public class ConfigureFuelChannelRequest
     public int Y { get; set; }
     public double NeutronFlux { get; set; }
     public double LocalPowerOutputMW { get; set; }
-    public string Status { get; set; }
+    public FuelRodStatus Status { get; set; }
 }

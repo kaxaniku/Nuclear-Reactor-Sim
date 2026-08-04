@@ -38,6 +38,14 @@ public class ConfigureSteamChannelCommandHandler : IRequestHandler<ConfigureStea
         telemetry.SteamQuality = request.Quality;
         telemetry.SteamType = request.Type;
 
+        cell.Telemetry = new SteamChannelTelemetryDto
+        {
+            SteamGenerationRateMW = request.SteamGenerationRateMW,
+            PressureBar = request.PressureBar,
+            SteamQuality = request.Quality,
+            SteamType = request.Type
+        };
+
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

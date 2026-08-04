@@ -10,6 +10,14 @@ public enum SteamType
     SuperDense      // 450C
 }
 
+public enum FuelRodStatus
+{
+    Nominal,
+    Warning,
+    Scrammed,
+    Critical,
+    Meltdown
+}
 
 [JsonDerivedType(typeof(CellTelemetry), typeDiscriminator: "base")]
 [JsonDerivedType(typeof(StructuralTelemetryDto), typeDiscriminator: "structural")]
@@ -68,5 +76,5 @@ public class FuelChannelTelemetryDto : CellTelemetry
 {
     public double NeutronFlux { get; set; }       // neutron flux rate
     public double LocalPowerOutputMW { get; set; }   // local thermal power generation
-    public string Status { get; set; } = null!;      // Nominal, Warning, Scrammed, Meltdown
+    public FuelRodStatus Status { get; set; }
 }

@@ -36,8 +36,11 @@ public class ConfigureCoolerCommandHandler : IRequestHandler<ConfigureCoolerComm
         if (request.CoolantLevelPercent < 0 || request.CoolantLevelPercent > 100)
             throw new ArgumentOutOfRangeException(nameof(request.CoolantLevelPercent), "Coolant level percentage must be between 0 and 100.");
 
-        telemetry.WaterFlowRate = request.WaterFlowRate;
-        telemetry.CoolantLevelPercent = request.CoolantLevelPercent / 100.0;
+        cell.Telemetry = new CoolerTelemetryDto
+        {
+            WaterFlowRate = request.WaterFlowRate,
+            CoolantLevelPercent = request.CoolantLevelPercent / 100.0
+        };
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }

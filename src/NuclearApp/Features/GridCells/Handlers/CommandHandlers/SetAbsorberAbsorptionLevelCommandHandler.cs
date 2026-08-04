@@ -36,7 +36,10 @@ public class SetAbsorberAbsorptionLevelCommandHandler : IRequestHandler<SetAbsor
         if (request.AbsorptionLevelPercent < 0 || request.AbsorptionLevelPercent > 100)
             throw new ArgumentOutOfRangeException(nameof(request.AbsorptionLevelPercent), "Absorption level must be between 0 and 100.");
 
-        telemetry.AbsorptionLevel = request.AbsorptionLevelPercent / 100.0;
+        cell.Telemetry = new AbsorberTelemetryDto
+        {
+            AbsorptionLevel = request.AbsorptionLevelPercent / 100.0
+        };
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }

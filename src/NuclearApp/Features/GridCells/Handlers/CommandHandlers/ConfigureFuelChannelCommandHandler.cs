@@ -33,9 +33,12 @@ public class ConfigureFuelChannelCommandHandler : IRequestHandler<ConfigureFuelC
         var telemetry = cell.Telemetry as FuelChannelTelemetryDto
             ?? throw new InvalidOperationException("Invalid telemetry type for fuel channel.");
 
-        telemetry.NeutronFlux = request.NeutronFlux;
-        telemetry.LocalPowerOutputMW = request.LocalPowerOutputMW;
-        telemetry.Status = request.Status;
+        cell.Telemetry = new FuelChannelTelemetryDto
+        {
+            NeutronFlux = request.NeutronFlux,
+            LocalPowerOutputMW = request.LocalPowerOutputMW,
+            Status = request.Status
+        };
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
