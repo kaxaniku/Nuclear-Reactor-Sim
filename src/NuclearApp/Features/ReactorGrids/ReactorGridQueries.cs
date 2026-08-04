@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using NuclearApp.DTOs;
 using NuclearDomain.Entities;
 
 namespace NuclearApp.Features.ReactorGrids;
@@ -20,3 +21,7 @@ public record Get2DGridDesignQuery(int ReactorGridId) : IRequest<string>;
 public record Get2DGridWithCoordinatesQuery(int ReactorGridId) : IRequest<string>;
 
 public record IsReactorValidQuery(int ReactorGridId) : IRequest<bool>;
+
+public record GetReactorOverviewQuery(int ReactorGridId) : IRequest<ReactorOverviewDto>;
+
+public record GetMonitoredReactorGridIdsQuery : IRequest<List<int>>;

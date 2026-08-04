@@ -156,4 +156,18 @@ public class ReactorGridController : ControllerBase
             return Ok(new { IsValid = true });
         return BadRequest(new { IsValid = false });
     }
+
+    [HttpPost("{reactorId:int}/watch")]
+    public async Task<IActionResult> WatchReactorAsync(int reactorId, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new SetReactorWatchStateCommand(reactorId, true), cancellationToken);
+        return Ok(new { Message = $"Reactor {reactorId} is now actively being monitored by the engine." });
+    }
+
+    [HttpPost("{reactorId:int}/unwatch")]
+    public async Task<IActionResult> UnwatchReactorAsync(int reactorId, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new SetReactorWatchStateCommand(reactorId, false), cancellationToken);
+        return Ok(new { Message = $"Stopped monitoring reactor {reactorId}." });
+    }
 }

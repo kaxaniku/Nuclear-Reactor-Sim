@@ -13,3 +13,5 @@ public record DeleteCellCommand(int ReactorGridId, int X, int Y) : IRequest;
 public record CreateReactorCommand(string Name) : IRequest<ReactorGrid>;
 
 public record DeleteReactorCommand(int Id) : IRequest;
+
+public record SetReactorWatchStateCommand(int ReactorGridId, bool IsMonitored) : IRequest;
