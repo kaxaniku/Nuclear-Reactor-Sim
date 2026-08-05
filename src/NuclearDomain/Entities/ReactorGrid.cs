@@ -10,6 +10,8 @@ public class ReactorGrid
     public int TotalRows { get; set; }
     public int TotalColumns { get; set; }
     public bool IsMonitored { get; set; }
+    public bool IsRunning { get; set; } = false;
+    public bool IsValid { get; set; } = false;
     public List<Cell> Cells { get; set; } = [];
     public ActivityInfo ActivityInfo { get; set; } = new ActivityInfo();
 }

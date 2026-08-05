@@ -9,3 +9,4 @@ public record SetAbsorberAbsorptionLevelCommand(int ReactorGridId, int X, int Y,
 public record ConfigureCoolerCommand(int ReactorGridId, int X, int Y, double WaterFlowRate, double CoolantLevelPercent) : IRequest;
 public record ConfigureSteamChannelCommand(int ReactorGridId, int X, int Y, double SteamGenerationRateMW, double PressureBar, double Quality, SteamType Type) : IRequest;
 public record ConfigureFuelChannelCommand(int ReactorGridId, int X, int Y, double NeutronFlux, double LocalPowerOutputMW, FuelRodStatus Status) : IRequest;
+public record ToggleFuelRodActivationCommand(int ReactorGridId, int X, int Y) : IRequest;

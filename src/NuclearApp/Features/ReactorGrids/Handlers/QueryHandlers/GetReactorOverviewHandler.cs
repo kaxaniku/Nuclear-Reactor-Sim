@@ -33,13 +33,20 @@ public class GetReactorOverviewHandler : IRequestHandler<GetReactorOverviewQuery
             }
         }
 
+        if (grid.Cells.Any(c => c.ColumnType == ColumnType.FuelChannel 
+            && (c.Telemetry as FuelChannelTelemetryDto)!.IsOnline))
+            grid.IsRunning = true;
+        else 
+            grid.IsRunning = false;
+
         return new ReactorOverviewDto(
             ReactorId: grid.Id,
             Name: grid.Name ?? "RBMK Reactor",
             AverageTemperature: 280.0,
             TotalPowerOutputMW: totalPower,
             AverageNeutronFlux: fuelCount > 0 ? totalFlux / fuelCount : 0,
-            ActiveFuelChannels: fuelCount
+            ActiveFuelChannels: fuelCount,
+            IsRunning: grid.IsRunning
         );
     }
 }

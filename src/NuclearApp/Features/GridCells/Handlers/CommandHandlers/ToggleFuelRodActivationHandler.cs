@@ -4,16 +4,16 @@ using NuclearDomain.Entities;
 
 namespace NuclearApp.Features.GridCells.Handlers.CommandHandlers;
 
-public class ConfigureFuelChannelCommandHandler : IRequestHandler<ConfigureFuelChannelCommand>
+public class ToggleFuelRodActivationHandler : IRequestHandler<ToggleFuelRodActivationCommand>
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    public ConfigureFuelChannelCommandHandler(IUnitOfWork unitOfWork)
+    public ToggleFuelRodActivationHandler(IUnitOfWork unitOfWork)
     {
-        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _unitOfWork = unitOfWork;
     }
 
-    public async Task Handle(ConfigureFuelChannelCommand request, CancellationToken cancellationToken)
+    public async Task Handle(ToggleFuelRodActivationCommand request, CancellationToken cancellationToken)
     {
         var grids = await _unitOfWork.ReactorGridRepository.QueryAsync(
             g => g.Id == request.ReactorGridId,
@@ -28,19 +28,23 @@ public class ConfigureFuelChannelCommandHandler : IRequestHandler<ConfigureFuelC
             ?? throw new InvalidOperationException($"Cell at position ({request.X}, {request.Y}) not found in reactor grid.");
 
         if (cell.ColumnType != ColumnType.FuelChannel)
-            throw new InvalidOperationException("The specified cell does not contain a fuel channel.");
+            throw new InvalidOperationException("The specified cell does not contain a fuel rod.");
 
         var telemetry = cell.Telemetry as FuelChannelTelemetryDto
-            ?? throw new InvalidOperationException("Invalid telemetry type for fuel channel.");
+            ?? throw new InvalidOperationException("Invalid telemetry type for fuel rod.");
 
+        bool activate = false;
         if (telemetry.IsOnline)
-            throw new InvalidOperationException("Can not configure running fuel channel.");
+            activate = false;
+        else
+            activate = true;
 
         cell.Telemetry = new FuelChannelTelemetryDto
         {
-            NeutronFlux = request.NeutronFlux,
-            LocalPowerOutputMW = request.LocalPowerOutputMW,
-            Status = request.Status
+            NeutronFlux = telemetry.NeutronFlux,
+            LocalPowerOutputMW = telemetry.LocalPowerOutputMW,
+            Status = telemetry.Status,
+            IsOnline = activate,
         };
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

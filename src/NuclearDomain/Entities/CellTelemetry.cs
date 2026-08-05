@@ -77,4 +77,5 @@ public class FuelChannelTelemetryDto : CellTelemetry
     public double NeutronFlux { get; set; }       // neutron flux rate
     public double LocalPowerOutputMW { get; set; }   // local thermal power generation
     public FuelRodStatus Status { get; set; }
+    public bool IsOnline { get; set; } = false;
 }

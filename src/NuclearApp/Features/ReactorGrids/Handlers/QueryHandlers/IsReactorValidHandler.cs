@@ -36,7 +36,6 @@ public class IsReactorValidHandler : IRequestHandler<IsReactorValidQuery, bool>
         var visited = new HashSet<(int, int)>();
         var stack = new Stack<(int, int)>();
 
-        // Start DFS from the first cell
         var startCell = reactorGrid.Cells.First();
         stack.Push((startCell.X, startCell.Y));
         visited.Add((startCell.X, startCell.Y));
@@ -45,7 +44,6 @@ public class IsReactorValidHandler : IRequestHandler<IsReactorValidQuery, bool>
         {
             var (currentX, currentY) = stack.Pop();
 
-            // Explore all four possible directions: up, down, left, right
             foreach (var direction in new[] { (-1, 0), (1, 0), (0, -1), (0, 1) })
             {
                 int newX = currentX + direction.Item1;
@@ -63,7 +61,6 @@ public class IsReactorValidHandler : IRequestHandler<IsReactorValidQuery, bool>
             }
         }
 
-        // If the number of visited cells equals the total number of cells, the reactor is valid
         return visited.Count == reactorGrid.Cells.Count;
     }
 }

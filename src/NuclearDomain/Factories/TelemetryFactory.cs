@@ -11,7 +11,8 @@ public static class TelemetryFactory
             TemperatureCelsius = 20.0, // Ambient starting temp
             NeutronFlux = 0.0,
             LocalPowerOutputMW = 0.0,
-            Status = 0
+            Status = 0,
+            IsOnline = false
         },
         ColumnType.ControlRods => new ControlRodsTelemetryDto
         {

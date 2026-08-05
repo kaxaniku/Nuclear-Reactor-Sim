@@ -6,5 +6,6 @@ public record ReactorOverviewDto(
     double AverageTemperature,
     double TotalPowerOutputMW,
     double AverageNeutronFlux,
-    int ActiveFuelChannels
+    int ActiveFuelChannels,
+    bool IsRunning
 );

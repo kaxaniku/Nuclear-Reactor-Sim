@@ -35,6 +35,7 @@ public class ReactorSimulationWorker : BackgroundService
 
                     Console.WriteLine($"\n========== REACTOR OVERVIEW [ID: {overview.ReactorId}] ==========");
                     Console.WriteLine($"Power: {overview.TotalPowerOutputMW:F2} MW | Avg Flux: {overview.AverageNeutronFlux:F2} | Fuel Channels: {overview.ActiveFuelChannels}");
+                    Console.WriteLine($"Activation: {(overview.IsRunning ? "ONLINE" : "OFFLINE")}");
                     Console.WriteLine("----------------------------------------------------------");
 
                     // 3. Fetch and print ASCII Grid

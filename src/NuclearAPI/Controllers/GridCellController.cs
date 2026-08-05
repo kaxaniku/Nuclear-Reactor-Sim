@@ -71,4 +71,12 @@ public class GridCellController : ControllerBase
         await _mediator.Send(command, cancellationToken);
         return NoContent();
     }
+
+    [HttpPost("ToggleFuelRodActivation")]
+    public async Task<IActionResult> ToggleFuelRodActivationAsync([FromBody] ToggleFuelRodActivationRequest request, CancellationToken cancellationToken = default)
+    {
+        var command = new ToggleFuelRodActivationCommand(request.ReactorGridId, request.X, request.Y);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
 }
