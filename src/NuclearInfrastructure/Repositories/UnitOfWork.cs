@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using NuclearApp.Interfaces.Repositories;
 
 namespace NuclearInfrastructure.Repositories;

@@ -1,6 +1,7 @@
 ﻿namespace NuclearDomain.Factories;
 
 using NuclearDomain.Entities;
+using NuclearDomain.Entities.Telemetries;
 
 public static class TelemetryFactory
 {
@@ -17,7 +18,7 @@ public static class TelemetryFactory
         ColumnType.ControlRods => new ControlRodsTelemetryDto
         {
             TemperatureCelsius = 20.0,
-            InsertionLevel = 1.0 // Mandatory RBMK safety default: Fully inserted
+            CurrentInsertionPercentage = 1.0 // Mandatory RBMK safety default: Fully inserted
         },
         ColumnType.Cooler => new CoolerTelemetryDto
         {

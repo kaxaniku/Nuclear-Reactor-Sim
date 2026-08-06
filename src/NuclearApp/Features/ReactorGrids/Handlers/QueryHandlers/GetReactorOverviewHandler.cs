@@ -2,6 +2,7 @@
 using NuclearApp.DTOs;
 using NuclearApp.Interfaces.Repositories;
 using NuclearDomain.Entities;
+using NuclearDomain.Entities.Telemetries;
 
 namespace NuclearApp.Features.ReactorGrids.Handlers.QueryHandlers;
 
@@ -38,6 +39,8 @@ public class GetReactorOverviewHandler : IRequestHandler<GetReactorOverviewQuery
             grid.IsRunning = true;
         else 
             grid.IsRunning = false;
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new ReactorOverviewDto(
             ReactorId: grid.Id,

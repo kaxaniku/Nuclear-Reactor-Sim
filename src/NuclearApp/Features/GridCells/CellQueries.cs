@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using NuclearDomain.Entities;
+using NuclearDomain.Entities.Telemetries;
 
 namespace NuclearApp.Features.GridCells;
 

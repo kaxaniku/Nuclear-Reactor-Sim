@@ -4,6 +4,8 @@ using Nuclear_Reactor_Sim.Extensions;
 using Nuclear_Reactor_Sim.Middlewares;
 using NuclearApp.Behaviors;
 using NuclearApp.Interfaces.Repositories;
+using NuclearApp.Interfaces.Services;
+using NuclearApp.Services;
 using NuclearInfrastructure.Repositories;
 using Serilog;
 using Serilog.Exceptions;
@@ -40,6 +42,7 @@ public class Program
 
         //Add Service interfaces
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+        builder.Services.AddSingleton<IReactorPhysicsEngine, ReactorPhysicsEngine>();
         builder.Services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(typeof(NuclearApp.AssemblyReference).Assembly);

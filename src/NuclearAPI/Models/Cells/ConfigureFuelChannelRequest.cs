@@ -1,4 +1,4 @@
-﻿using NuclearDomain.Entities;
+﻿using NuclearDomain.Entities.Telemetries;
 
 namespace Nuclear_Reactor_Sim.Models.Cells;
 

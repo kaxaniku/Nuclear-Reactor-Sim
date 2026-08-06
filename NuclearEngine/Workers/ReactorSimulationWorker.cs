@@ -16,7 +16,8 @@ public class ReactorSimulationWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+        const double tickIntervalSeconds = 2.0;
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(tickIntervalSeconds));
 
         while (await timer.WaitForNextTickAsync(stoppingToken) && !stoppingToken.IsCancellationRequested)
         {
@@ -25,20 +26,19 @@ public class ReactorSimulationWorker : BackgroundService
                 using var scope = _scopeFactory.CreateScope();
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-                // 1. Fetch IDs of reactors currently flagged for active watching
                 var watchedGridIds = await mediator.Send(new GetMonitoredReactorGridIdsQuery(), stoppingToken);
 
                 foreach (var gridId in watchedGridIds)
                 {
-                    // 2. Fetch and print Overview
                     var overview = await mediator.Send(new GetReactorOverviewQuery(gridId), stoppingToken);
+
+                    await mediator.Send(new ProcessReactorTickCommand(gridId, tickIntervalSeconds), stoppingToken);
 
                     Console.WriteLine($"\n========== REACTOR OVERVIEW [ID: {overview.ReactorId}] ==========");
                     Console.WriteLine($"Power: {overview.TotalPowerOutputMW:F2} MW | Avg Flux: {overview.AverageNeutronFlux:F2} | Fuel Channels: {overview.ActiveFuelChannels}");
                     Console.WriteLine($"Activation: {(overview.IsRunning ? "ONLINE" : "OFFLINE")}");
                     Console.WriteLine("----------------------------------------------------------");
 
-                    // 3. Fetch and print ASCII Grid
                     string gridAscii = await mediator.Send(new Get2DGridDesignQuery(gridId), stoppingToken);
                     Console.WriteLine(gridAscii);
                 }

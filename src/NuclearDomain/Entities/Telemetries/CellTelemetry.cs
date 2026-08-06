@@ -1,22 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace NuclearDomain.Entities;
+namespace NuclearDomain.Entities.Telemetries;
 
 public enum SteamType
 {
     Normal,         // 100C
     Dense,          // 300C
     SuperDense      // 450C
-}
-
-public enum FuelRodStatus
-{
-    Nominal,
-    Warning,
-    Scrammed,
-    Critical,
-    Meltdown
 }
 
 [JsonDerivedType(typeof(CellTelemetry), typeDiscriminator: "base")]
@@ -43,11 +34,6 @@ public class GraphiteModeratorTelemetryDto : CellTelemetry
     // No additional fields required beyond the base class
 }
 
-public class ControlRodsTelemetryDto : CellTelemetry
-{
-    public double InsertionLevel { get; set; }     // Percentage inserted 0.0 - 1.0
-}
-
 public class ReflectorTelemetryDto : CellTelemetry
 {
     // No additional fields required beyond the base class
@@ -70,12 +56,4 @@ public class SteamChannelTelemetryDto : CellTelemetry
     public double PressureBar { get; set; }
     public double SteamQuality { get; set; }         // Percentage of water turned to steam (0.0 - 1.0)
     public SteamType SteamType { get; set; }
-}
-
-public class FuelChannelTelemetryDto : CellTelemetry
-{
-    public double NeutronFlux { get; set; }       // neutron flux rate
-    public double LocalPowerOutputMW { get; set; }   // local thermal power generation
-    public FuelRodStatus Status { get; set; }
-    public bool IsOnline { get; set; } = false;
 }

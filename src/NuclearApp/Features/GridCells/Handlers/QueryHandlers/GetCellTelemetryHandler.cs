@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using MediatR;
 using NuclearApp.Interfaces.Repositories;
-using NuclearDomain.Entities;
+using NuclearDomain.Entities.Telemetries;
 
 namespace NuclearApp.Features.GridCells.Handlers.QueryHandlers;
 

@@ -2,6 +2,7 @@
 using NuclearApp.DTOs;
 using NuclearApp.Interfaces.Repositories;
 using NuclearDomain.Entities;
+using NuclearDomain.Entities.Telemetries;
 
 namespace NuclearApp.Features.GridCells.Handlers.CommandHandlers;
 
@@ -39,7 +40,7 @@ public class MoveControlRodCommandHandler : IRequestHandler<MoveControlRodComman
 
         cell.Telemetry = new ControlRodsTelemetryDto
         {
-            InsertionLevel = request.TargetInsertionPercentage / 100.0
+            TargetInsertionPercentage = request.TargetInsertionPercentage / 100.0
         };
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

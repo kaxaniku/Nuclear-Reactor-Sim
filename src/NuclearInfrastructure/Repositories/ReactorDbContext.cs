@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using NuclearDomain.Entities;
+using NuclearDomain.Entities.Telemetries;
 
 namespace NuclearInfrastructure.Repositories;
 

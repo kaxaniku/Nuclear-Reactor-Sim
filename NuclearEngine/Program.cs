@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NuclearApp.Interfaces.Repositories;
+using NuclearApp.Interfaces.Services;
+using NuclearApp.Services;
 using NuclearEngine.Workers;
 using NuclearInfrastructure.Repositories;
 
@@ -10,6 +12,7 @@ builder.Services.AddDbContext<ReactorDbContext>(options =>
            .UseSnakeCaseNamingConvention());
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddSingleton<IReactorPhysicsEngine, ReactorPhysicsEngine>();
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(NuclearApp.AssemblyReference).Assembly));
 
