@@ -76,7 +76,7 @@ public class GridCellController : ControllerBase
     public async Task<IActionResult> ToggleFuelRodActivationAsync([FromBody] ToggleFuelRodActivationRequest request, CancellationToken cancellationToken = default)
     {
         var command = new ToggleFuelRodActivationCommand(request.ReactorGridId, request.X, request.Y);
-        await _mediator.Send(command, cancellationToken);
-        return NoContent();
+        var status = await _mediator.Send(command, cancellationToken);
+        return Ok($"Fuel rod {(status ? "activated" : "deactivated")}.");
     }
 }

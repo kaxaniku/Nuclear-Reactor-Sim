@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using NuclearApp.DTOs;
+using NuclearApp.Interfaces.Repositories;
 using NuclearDomain.Entities;
 
 namespace NuclearApp.Features.ReactorGrids;
@@ -14,4 +15,4 @@ public record CreateReactorCommand(string Name) : IRequest<ReactorGrid>;
 
 public record DeleteReactorCommand(int Id) : IRequest;
 
-public record SetReactorWatchStateCommand(int ReactorGridId, bool IsMonitored) : IRequest;
+public record SetReactorWatchStateCommand(int ReactorGridId, bool IsMonitored) : IRequest, IRequiresValidReactor;

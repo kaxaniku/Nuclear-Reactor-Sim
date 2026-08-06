@@ -61,6 +61,12 @@ public class IsReactorValidHandler : IRequestHandler<IsReactorValidQuery, bool>
             }
         }
 
-        return visited.Count == reactorGrid.Cells.Count;
+        if (visited.Count == reactorGrid.Cells.Count)
+        {
+            reactorGrid.Validate();
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        return false;
     }
 }

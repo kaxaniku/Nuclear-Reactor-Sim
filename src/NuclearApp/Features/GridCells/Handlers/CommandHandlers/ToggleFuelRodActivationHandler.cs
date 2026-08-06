@@ -4,7 +4,7 @@ using NuclearDomain.Entities;
 
 namespace NuclearApp.Features.GridCells.Handlers.CommandHandlers;
 
-public class ToggleFuelRodActivationHandler : IRequestHandler<ToggleFuelRodActivationCommand>
+public class ToggleFuelRodActivationHandler : IRequestHandler<ToggleFuelRodActivationCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
 
@@ -13,7 +13,7 @@ public class ToggleFuelRodActivationHandler : IRequestHandler<ToggleFuelRodActiv
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Handle(ToggleFuelRodActivationCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(ToggleFuelRodActivationCommand request, CancellationToken cancellationToken)
     {
         var grids = await _unitOfWork.ReactorGridRepository.QueryAsync(
             g => g.Id == request.ReactorGridId,
@@ -48,5 +48,6 @@ public class ToggleFuelRodActivationHandler : IRequestHandler<ToggleFuelRodActiv
         };
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return activate;
     }
 }

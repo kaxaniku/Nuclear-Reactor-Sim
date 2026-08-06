@@ -1,6 +1,8 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Nuclear_Reactor_Sim.Extensions;
 using Nuclear_Reactor_Sim.Middlewares;
+using NuclearApp.Behaviors;
 using NuclearApp.Interfaces.Repositories;
 using NuclearInfrastructure.Repositories;
 using Serilog;
@@ -39,7 +41,11 @@ public class Program
         //Add Service interfaces
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
         builder.Services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssembly(typeof(NuclearApp.AssemblyReference).Assembly));
+        {
+            cfg.RegisterServicesFromAssembly(typeof(NuclearApp.AssemblyReference).Assembly);
+
+            cfg.AddOpenBehavior(typeof(ReactorValidationBehavior<,>));
+        });
 
         builder.Services.AddCors(options =>
         {

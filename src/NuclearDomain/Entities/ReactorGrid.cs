@@ -14,4 +14,14 @@ public class ReactorGrid
     public bool IsValid { get; set; } = false;
     public List<Cell> Cells { get; set; } = [];
     public ActivityInfo ActivityInfo { get; set; } = new ActivityInfo();
+
+    public void Validate()
+    {
+        IsValid = true;
+    }
+
+    public void Invalidate()
+    {
+        IsValid = false;
+    }
 }

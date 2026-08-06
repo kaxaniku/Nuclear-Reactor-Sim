@@ -13,6 +13,26 @@ public class ReactorDbContext : DbContext
     public DbSet<Cell> Cells { get; set; }
     public DbSet<ReactorGrid> ReactorGrids { get; set; }
 
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var hasCellChanges = ChangeTracker.Entries<Cell>()
+            .Any(e => e.State == EntityState.Added ||
+                      e.State == EntityState.Deleted);
+
+        if (hasCellChanges)
+        {
+            var trackedGrids = ChangeTracker.Entries<ReactorGrid>()
+                .Select(e => e.Entity);
+
+            foreach (var grid in trackedGrids)
+            {
+                grid.Invalidate();
+            }
+        }
+
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
