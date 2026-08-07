@@ -22,7 +22,10 @@ internal class CellRepository : BaseRepository<Cell>, ICellRepository
     {
         foreach (var cell in cells)
         {
-            _context.Entry(cell).State = EntityState.Modified;
+            var entry = _context.Entry(cell);
+            entry.State = EntityState.Modified;
+
+            entry.Property(c => c.Telemetry).IsModified = true;
         }
     }
 }

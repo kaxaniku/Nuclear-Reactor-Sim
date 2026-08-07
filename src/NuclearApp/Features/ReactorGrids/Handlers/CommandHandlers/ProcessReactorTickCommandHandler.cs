@@ -32,10 +32,9 @@ public class ProcessReactorTickCommandHandler : IRequestHandler<ProcessReactorTi
             fuel.IsOnline &&
             fuel.Status != FuelRodStatus.Meltdown);
 
-        // Update grid state deterministically during the physics tick
         grid.IsRunning = activeFuelCount > 0;
 
-        if (!grid.IsRunning || !grid.IsValid)
+        if (grid.IsRunning && grid.IsValid)
         {
             _physicsEngine.ProcessPhysicsTick(grid, request.DeltaTimeSeconds);
             _unitOfWork.CellRepository.MarkRangeModified(grid.Cells);

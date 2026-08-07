@@ -17,4 +17,6 @@ public record DeleteReactorCommand(int Id) : IRequest;
 
 public record SetReactorWatchStateCommand(int ReactorGridId, bool IsMonitored) : IRequest, IRequiresValidReactor;
 
+public record ResetReactorCommand(int ReactorGridId) : IRequest;
+
 public record ProcessReactorTickCommand(int ReactorGridId, double DeltaTimeSeconds) : IRequest;

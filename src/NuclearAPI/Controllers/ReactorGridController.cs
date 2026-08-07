@@ -160,6 +160,12 @@ public class ReactorGridController : ControllerBase
         return Ok(new { Message = $"Stopped monitoring reactor {reactorId}." });
     }
 
+    [HttpPost("resetReactor/{reactorId:int}")]
+    public async Task<IActionResult> ResetReactorAsync(int reactorId, CancellationToken cancellationToken = default)
+    {
+        await _mediator.Send(new ResetReactorCommand(reactorId), cancellationToken);
+        return NoContent();
+    }
     [HttpGet("validateReactor/{reactorId:int}")]
     public async Task<IActionResult> ValidateReactorAsync(int reactorId, CancellationToken cancellationToken = default)
     {
