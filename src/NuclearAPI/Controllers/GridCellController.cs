@@ -40,14 +40,6 @@ public class GridCellController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("setAbsorberAbsorptionLevel")]
-    public async Task<IActionResult> SetAbsorberAbsorptionLevelAsync([FromBody] SetAbsorberAbsorptionLevelRequest request, CancellationToken cancellationToken = default)
-    {
-        var command = new SetAbsorberAbsorptionLevelCommand(request.ReactorGridId, request.X, request.Y, request.AbsorptionLevelPercent);
-        await _mediator.Send(command, cancellationToken);
-        return NoContent();
-    }
-
     [HttpPost("configureCooler")]
     public async Task<IActionResult> ConfigureCoolerAsync([FromBody] ConfigureCoolerRequest request, CancellationToken cancellationToken = default)
     {
@@ -59,7 +51,7 @@ public class GridCellController : ControllerBase
     [HttpPost("configureSteamChannel")]
     public async Task<IActionResult> ConfigureSteamChannelAsync([FromBody] ConfigureSteamChannelRequest request, CancellationToken cancellationToken = default)
     {
-        var command = new ConfigureSteamChannelCommand(request.ReactorGridId, request.X, request.Y, request.SteamGenerationRateMW, request.PressureBar, request.Quality, request.Type);
+        var command = new ConfigureSteamChannelCommand(request.ReactorGridId, request.X, request.Y, request.Type);
         await _mediator.Send(command, cancellationToken);
         return NoContent();
     }
@@ -67,7 +59,7 @@ public class GridCellController : ControllerBase
     [HttpPost("configureFuelChannel")]
     public async Task<IActionResult> ConfigureFuelChannelAsync([FromBody] ConfigureFuelChannelRequest request, CancellationToken cancellationToken = default)
     {
-        var command = new ConfigureFuelChannelCommand(request.ReactorGridId, request.X, request.Y, request.NeutronFlux, request.LocalPowerOutputMW, request.Status);
+        var command = new ConfigureFuelChannelCommand(request.ReactorGridId, request.X, request.Y, request.Status);
         await _mediator.Send(command, cancellationToken);
         return NoContent();
     }

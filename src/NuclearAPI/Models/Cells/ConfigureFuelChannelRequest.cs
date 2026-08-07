@@ -7,7 +7,5 @@ public class ConfigureFuelChannelRequest
     public int ReactorGridId { get; set; }
     public int X { get; set; }
     public int Y { get; set; }
-    public double NeutronFlux { get; set; }
-    public double LocalPowerOutputMW { get; set; }
     public FuelRodStatus Status { get; set; }
 }

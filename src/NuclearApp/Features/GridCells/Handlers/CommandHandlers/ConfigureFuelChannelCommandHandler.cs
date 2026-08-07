@@ -39,8 +39,6 @@ public class ConfigureFuelChannelCommandHandler : IRequestHandler<ConfigureFuelC
 
         cell.Telemetry = new FuelChannelTelemetryDto
         {
-            NeutronFlux = request.NeutronFlux,
-            LocalPowerOutputMW = request.LocalPowerOutputMW,
             Status = request.Status
         };
 

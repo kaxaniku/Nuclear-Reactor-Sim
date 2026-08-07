@@ -2,6 +2,8 @@
 using NuclearApp.Interfaces.Repositories;
 using NuclearApp.Interfaces.Services;
 using NuclearApp.Services;
+using NuclearDomain.Entities;
+using NuclearDomain.Entities.Telemetries;
 
 namespace NuclearApp.Features.ReactorGrids.Handlers.CommandHandlers;
 
@@ -22,13 +24,22 @@ public class ProcessReactorTickCommandHandler : IRequestHandler<ProcessReactorTi
             g => g.Id == request.ReactorGridId,
             cancellationToken,
             g => g.Cells
-        )).FirstOrDefault();
+        )).FirstOrDefault() ?? throw new Exception("Reactor grid not found");
 
-        if (grid == null || !grid.IsRunning || !grid.IsValid)
-            return;
+        int activeFuelCount = grid.Cells.Count(c =>
+            c.ColumnType == ColumnType.FuelChannel &&
+            c.Telemetry is FuelChannelTelemetryDto fuel &&
+            fuel.IsOnline &&
+            fuel.Status != FuelRodStatus.Meltdown);
 
-        _physicsEngine.ProcessPhysicsTick(grid, request.DeltaTimeSeconds);
-        _unitOfWork.CellRepository.MarkRangeModified(grid.Cells);
+        // Update grid state deterministically during the physics tick
+        grid.IsRunning = activeFuelCount > 0;
+
+        if (!grid.IsRunning || !grid.IsValid)
+        {
+            _physicsEngine.ProcessPhysicsTick(grid, request.DeltaTimeSeconds);
+            _unitOfWork.CellRepository.MarkRangeModified(grid.Cells);
+        }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }

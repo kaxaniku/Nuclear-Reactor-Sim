@@ -42,7 +42,6 @@ public class ToggleFuelRodActivationHandler : IRequestHandler<ToggleFuelRodActiv
 
         cell.Telemetry = new FuelChannelTelemetryDto
         {
-            NeutronFlux = telemetry.NeutronFlux,
             LocalPowerOutputMW = telemetry.LocalPowerOutputMW,
             Status = telemetry.Status,
             IsOnline = activate,

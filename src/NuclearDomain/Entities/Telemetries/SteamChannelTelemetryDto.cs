@@ -1,0 +1,130 @@
+﻿namespace NuclearDomain.Entities.Telemetries;
+
+public enum SteamType
+{
+    Normal,         // Low pressure / subcooled boiling (~100°C saturation)
+    Dense,          // High-pressure saturated wet steam (~70 bar, ~285.8°C saturation)
+    Superheated,    // Dry steam heated beyond boiling temperature
+    Supercritical   // Above critical point (>221.2 bar, >374°C - liquid/gas phase boundary disappears)
+}
+
+public class SteamChannelTelemetryDto : CellTelemetry
+{
+    /// <summary>
+    /// Target pressure maintained by the main steam drum separator and turbine bypass valves (Bar).
+    /// Range: 1.0 bar (Atmospheric) to 100.0+ bar (Overpressurized). Default: 70.0 bar (RBMK operational).
+    /// </summary>
+    public double TargetPressureBar { get; set; } = 70.0;
+
+    /// <summary>
+    /// Main Circulation Pump (MCP) coolant intake throttling (0.0 = Valve Closed/No Flow, 1.0 = Max Flow).
+    /// Lower flow causes water to dwell longer and superheat; higher flow keeps it subcooled/dense.
+    /// </summary>
+    public double FlowRateThrottling { get; set; } = 1.0;
+    public double SteamGenerationRateMW { get; set; }
+    public double PressureBar { get; set; } = 70.0; // RBMK-1000 standard operational pressure
+    public double SteamQuality { get; set; }        // Void fraction (0.0 = all liquid water, 1.0 = 100% steam)
+    public SteamType SteamType { get; private set; } = SteamType.Dense;
+
+    // Saturation temperature (boiling point) scales directly with pressure
+    public double TargetPhaseTemperatureCelsius => PressureBar switch
+    {
+        <= 1.0 => 100.0,
+        >= 221.2 => 374.0, // Critical point of water
+        >= 70.0 => 285.8,  // RBMK-1000 operational saturation point
+        _ => 100.0 + (PressureBar * 2.65) // Linear approximation for intermediate pressures
+    };
+
+    // Latent heat of vaporization decreases as pressure compresses steam density
+    private double LatentHeatVaporization => PressureBar switch
+    {
+        <= 1.0 => 2.26,   // MJ/kg at atmospheric pressure
+        >= 221.2 => 0.0,  // Latent heat reaches zero at critical point
+        >= 70.0 => 1.50,  // MJ/kg at 70 bar
+        _ => 2.26 - (PressureBar * 0.0108)
+    };
+
+    private const double WaterSpecificHeat = 0.004184; // MJ / (kg * °C) (Liquid water)
+    private const double SteamSpecificHeat = 0.002100; // MJ / (kg * °C) (Superheated steam gas)
+
+    public void ProcessCoolingAndSteam(double thermalEnergyInputMJ, double baseWaterMassKg, double deltaTimeSeconds)
+    {
+        // Smoothly adjust current pressure toward target pressure driven by steam drum valves
+        PressureBar += (TargetPressureBar - PressureBar) * Math.Min(1.0, deltaTimeSeconds * 0.5);
+
+        // Effective water mass flow inside the channel adjusted by operator throttling
+        double effectiveWaterMassKg = Math.Max(1.0, baseWaterMassKg * FlowRateThrottling);
+
+        // 1. Sensible Heating
+        double targetSatTemp = TargetPhaseTemperatureCelsius;
+
+        if (TemperatureCelsius < targetSatTemp)
+        {
+            double energyNeededToBoil = effectiveWaterMassKg * WaterSpecificHeat * (targetSatTemp - TemperatureCelsius);
+
+            if (thermalEnergyInputMJ <= energyNeededToBoil)
+            {
+                TemperatureCelsius += thermalEnergyInputMJ / (effectiveWaterMassKg * WaterSpecificHeat);
+                SteamGenerationRateMW = 0.0;
+
+                // High coolant flow flushes voids faster
+                double flushRate = 0.20 * FlowRateThrottling * deltaTimeSeconds;
+                SteamQuality = Math.Max(0.0, SteamQuality - flushRate);
+                UpdateSteamType();
+                return;
+            }
+
+            TemperatureCelsius = targetSatTemp;
+            thermalEnergyInputMJ -= energyNeededToBoil;
+        }
+
+        // 2. Latent Heat Phase Change
+        if (SteamQuality < 1.0 && PressureBar < 221.2)
+        {
+            double latentHeat = LatentHeatVaporization;
+            double steamProducedKg = thermalEnergyInputMJ / latentHeat;
+
+            SteamGenerationRateMW = thermalEnergyInputMJ / deltaTimeSeconds;
+            double newQuality = SteamQuality + (steamProducedKg / effectiveWaterMassKg);
+
+            if (newQuality <= 1.0)
+            {
+                // Coolant flow replenishment rate scales directly with flow throttling
+                double coolantReplacementRate = 0.15 * FlowRateThrottling * deltaTimeSeconds;
+                SteamQuality = Math.Clamp(newQuality - coolantReplacementRate, 0.0, 1.0);
+                UpdateSteamType();
+                return;
+            }
+
+            double unusedEnergyMJ = (newQuality - 1.0) * effectiveWaterMassKg * latentHeat;
+            SteamQuality = 1.0;
+            thermalEnergyInputMJ = unusedEnergyMJ;
+        }
+
+        // 3. Superheating Phase
+        TemperatureCelsius += thermalEnergyInputMJ / (effectiveWaterMassKg * SteamSpecificHeat);
+        SteamGenerationRateMW = thermalEnergyInputMJ / deltaTimeSeconds;
+
+        UpdateSteamType();
+    }
+
+    private void UpdateSteamType()
+    {
+        if (PressureBar >= 221.2)
+        {
+            SteamType = SteamType.Supercritical;
+        }
+        else if (SteamQuality >= 1.0)
+        {
+            SteamType = SteamType.Superheated;
+        }
+        else if (PressureBar >= 30.0)
+        {
+            SteamType = SteamType.Dense;
+        }
+        else
+        {
+            SteamType = SteamType.Normal;
+        }
+    }
+}
