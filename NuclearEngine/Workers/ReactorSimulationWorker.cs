@@ -16,8 +16,11 @@ public class ReactorSimulationWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        const double tickIntervalSeconds = 2.0;
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(tickIntervalSeconds));
+        const double renderIntervalSeconds = 2.0;
+        const int subTicksPerInterval = 20; // Run physics 10 times per render cycle
+        const double physicsSubTickSeconds = renderIntervalSeconds / subTicksPerInterval; // 0.1s physics step
+
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(renderIntervalSeconds));
 
         while (await timer.WaitForNextTickAsync(stoppingToken) && !stoppingToken.IsCancellationRequested)
         {
@@ -25,7 +28,7 @@ public class ReactorSimulationWorker : BackgroundService
             {
                 List<int> watchedGridIds;
 
-                // Query monitored IDs in a short-lived scope
+                // Query monitored IDs
                 using (var initScope = _scopeFactory.CreateScope())
                 {
                     var mediator = initScope.ServiceProvider.GetRequiredService<IMediator>();
@@ -34,14 +37,16 @@ public class ReactorSimulationWorker : BackgroundService
 
                 foreach (var gridId in watchedGridIds)
                 {
-                    // 1. Physics Write Transaction
                     using (var commandScope = _scopeFactory.CreateScope())
                     {
                         var mediator = commandScope.ServiceProvider.GetRequiredService<IMediator>();
-                        await mediator.Send(new ProcessReactorTickCommand(gridId, tickIntervalSeconds), stoppingToken);
+
+                        for (int i = 0; i < subTicksPerInterval; i++)
+                        {
+                            await mediator.Send(new ProcessReactorTickCommand(gridId, physicsSubTickSeconds), stoppingToken);
+                        }
                     }
 
-                    // 2. Clean Telemetry Query Read
                     using (var queryScope = _scopeFactory.CreateScope())
                     {
                         var mediator = queryScope.ServiceProvider.GetRequiredService<IMediator>();

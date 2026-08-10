@@ -18,7 +18,7 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
     private const double VoidCoefficient = +0.00015;    // +Δk per % void
 
     // INCREASED: Allows realistic MW power generation from Thermal Flux
-    private const double FluxToMWFactor = 0.5;
+    private const double FluxToMWFactor = 1.2;
 
     private static readonly (int dx, int dy)[] Directions = new[]
     {
@@ -76,9 +76,9 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
     }
 
     private static void ProcessDiffusionAndNeutronChain(
-        Dictionary<(int X, int Y), Cell> cellMap,
-        List<Cell> controlRods,
-        double deltaTimeSeconds)
+    Dictionary<(int X, int Y), Cell> cellMap,
+    List<Cell> controlRods,
+    double deltaTimeSeconds)
     {
         var newFastFlux = new Dictionary<(int X, int Y), double>();
         var newThermalFlux = new Dictionary<(int X, int Y), double>();
@@ -105,15 +105,32 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
                 if (!cellMap.TryGetValue(neighborPos, out var neighborCell))
                     continue;
 
+                bool isSourceGraphite = cell.ColumnType == ColumnType.GraphiteModerator;
+
                 switch (neighborCell.ColumnType)
                 {
                     case ColumnType.GraphiteModerator:
-                        // Graphite moderates fast neutrons into thermal neutrons
+                        // Any fast flux entering graphite (from fuel, reflector, or another graphite block) thermalizes
                         AddDelta(newThermalFlux, neighborPos, outgoingFast * 0.95);
+                        AddDelta(newThermalFlux, neighborPos, outgoingThermal * 0.95);
+                        break;
+
+                    case ColumnType.FuelChannel:
+                        if (isSourceGraphite)
+                        {
+                            // Flux coming out of graphite into fuel enters as thermal flux
+                            AddDelta(newThermalFlux, neighborPos, outgoingFast * 0.95);
+                            AddDelta(newThermalFlux, neighborPos, outgoingThermal * 0.90);
+                        }
+                        else
+                        {
+                            // Direct fuel-to-fuel or control-to-fuel transfer retains fast/thermal split
+                            AddDelta(newFastFlux, neighborPos, outgoingFast * 0.80);
+                            AddDelta(newThermalFlux, neighborPos, outgoingThermal * 0.80);
+                        }
                         break;
 
                     case ColumnType.Reflector:
-                        // Reflector bounces fast flux back into source cell
                         AddDelta(newFastFlux, (x, y), outgoingFast * 0.85);
                         AddDelta(newThermalFlux, (x, y), outgoingThermal * 0.85);
                         AddDelta(newThermalFlux, (x, y), outgoingFast * 0.10);
@@ -122,7 +139,19 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
                     case ColumnType.ControlRods:
                         if (neighborCell.Telemetry is ControlRodsTelemetryDto rod)
                         {
-                            double passedThermal = outgoingThermal * (1.0 - rod.CurrentInsertionPercentage);
+                            double absorption = Math.Clamp(rod.CurrentInsertionPercentage / 100.0, 0.0, 1.0);
+                            double passedThermal = outgoingThermal * (1.0 - absorption);
+
+                            // If source was graphite, fast neutrons were also moderated before hitting the rod
+                            if (isSourceGraphite)
+                            {
+                                passedThermal += (outgoingFast * 0.95) * (1.0 - absorption);
+                            }
+                            else
+                            {
+                                AddDelta(newFastFlux, neighborPos, outgoingFast * 0.80);
+                            }
+
                             AddDelta(newThermalFlux, neighborPos, passedThermal);
                         }
                         break;
@@ -131,7 +160,6 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
                         AddDelta(newFastFlux, neighborPos, outgoingFast * 0.80);
                         AddDelta(newThermalFlux, neighborPos, outgoingThermal * 0.80);
                         break;
-
                 }
             }
         }
@@ -150,19 +178,23 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
                 double deltaKVoid = nearbyVoidFraction * VoidCoefficient * 100.0;
                 double localK = BaseKInfinitive + deltaKDoppler + deltaKVoid;
 
-                // Use newly calculated thermal flux from Pass 1 (moderated from graphite)
-                double currentThermalInCell = newThermalFlux.GetValueOrDefault((x, y), fuel.ThermalFlux);
+                // 1. Get raw thermal flux entering cell
+                double currentThermalInCell = newThermalFlux.GetValueOrDefault((x, y), 0.0);
 
-                // Ensure a minimal seed only when thermal flux is critically low during startup
+                // 2. Ensure minimal seed for cold startup
                 double effectiveThermal = Math.Max(currentThermalInCell, 20.0);
 
-                // Thermal neutrons absorbed to induce fission
-                double thermalAbsorbed = effectiveThermal * (0.25 * deltaTimeSeconds);
+                // If we seeded artificially, make sure the cell dictionary reflects the seed baseline
+                if (currentThermalInCell < 20.0)
+                {
+                    newThermalFlux[(x, y)] = 20.0;
+                }
 
-                // Generate fast neutrons from fission
-                double fissionFastFlux = thermalAbsorbed * localK * 2.0; // Scaled so production > leakage when localK > 1.0
+                // 3. Absorption & Fission
+                double thermalAbsorbed = effectiveThermal * Math.Min(1.0, 0.25 * deltaTimeSeconds);
+                double fissionFastFlux = thermalAbsorbed * localK * 2.0;
 
-                // Subtract consumed thermal flux and add generated fast flux
+                // 4. Update flux pools
                 AddDelta(newThermalFlux, (x, y), -thermalAbsorbed);
                 AddDelta(newFastFlux, (x, y), fissionFastFlux);
             }
@@ -231,7 +263,7 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
     Dictionary<(int X, int Y), Cell> cellMap,
     double deltaTimeSeconds)
     {
-        const double ThermalConductivity = 0.001;
+        const double ThermalConductivity = 0.015;
         var energyTransfersMJ = new Dictionary<(int X, int Y), double>();
 
         // 1. Calculate Conduction Transfers
@@ -254,8 +286,7 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
                     {
                         double energyTransferredMJ = tempDiff * ThermalConductivity * deltaTimeSeconds;
 
-                        // Limit transfer per neighbor so 4 neighbors combined can't drain >32% of heat per tick
-                        double maxTransferMJ = (tempDiff * 0.08) * energyToEqualizeMJ;
+                        double maxTransferMJ = (tempDiff * 0.1) * energyToEqualizeMJ;
                         energyTransferredMJ = Math.Min(energyTransferredMJ, maxTransferMJ);
 
                         AddDelta(energyTransfersMJ, (x, y), -energyTransferredMJ);
