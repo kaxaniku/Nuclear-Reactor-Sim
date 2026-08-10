@@ -52,6 +52,15 @@ public class SteamChannelTelemetryDto : CellTelemetry
         // Smoothly adjust current pressure toward target pressure driven by steam drum valves
         PressureBar += (TargetPressureBar - PressureBar) * Math.Min(1.0, deltaTimeSeconds * 0.5);
 
+        if (thermalEnergyInputMJ <= 0.0)
+        {
+            SteamGenerationRateMW = 0.0;
+            double flushRate = 0.10 * FlowRateThrottling * deltaTimeSeconds;
+            SteamQuality = Math.Max(0.0, SteamQuality - flushRate);
+            UpdateSteamType();
+            return;
+        }
+
         // Effective water mass flow inside the channel adjusted by operator throttling
         double effectiveWaterMassKg = Math.Max(1.0, baseWaterMassKg * FlowRateThrottling);
 
