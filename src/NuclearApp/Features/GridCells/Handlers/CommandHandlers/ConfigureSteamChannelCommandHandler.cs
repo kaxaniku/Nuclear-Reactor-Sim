@@ -61,7 +61,7 @@ public class ConfigureSteamChannelCommandHandler : IRequestHandler<ConfigureStea
                 throw new ArgumentOutOfRangeException(nameof(request.Type), $"Unsupported steam type: {request.Type}");
         }
 
-        _unitOfWork.CellRepository.MarkRangeModified(new[] { cell });
+        _unitOfWork.CellRepository.MarkModified(cell);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }

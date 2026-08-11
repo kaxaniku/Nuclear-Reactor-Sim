@@ -34,7 +34,7 @@ public class ProcessReactorTickCommandHandler : IRequestHandler<ProcessReactorTi
 
         grid.IsRunning = activeFuelCount > 0;
 
-        if (grid.IsRunning && grid.IsValid)
+        if (grid.IsMonitored && grid.IsValid)
         {
             _physicsEngine.ProcessPhysicsTick(grid, request.DeltaTimeSeconds);
             _unitOfWork.CellRepository.MarkRangeModified(grid.Cells);

@@ -32,6 +32,14 @@ public class GridCellController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("moveAllControlRods")]
+    public async Task<IActionResult> MoveAllControlRodsAsync([FromBody] MoveAllControlRodsRequest request)
+    {
+        var command = new MoveAllControlRodsCommand(request.ReactorGridId, request.TargetInsertionPercentage);
+        await _mediator.Send(command);
+        return NoContent();
+    }
+
     [HttpPost("setGraphiteModeratorTemperature")]
     public async Task<IActionResult> SetGraphiteModeratorTemperatureAsync([FromBody] SetGraphiteModeratorTemperatureRequest request, CancellationToken cancellationToken = default)
     {
@@ -56,6 +64,14 @@ public class GridCellController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("configureAllSteamChannels")]
+    public async Task<IActionResult> ConfigureAllSteamChannelsAsync([FromBody] ConfigureAllSteamChannelsRequest request, CancellationToken cancellationToken = default)
+    {
+        var command = new ConfigureAllSteamChannelsCommand(request.ReactorGridId, request.Type);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
     [HttpPost("configureFuelChannel")]
     public async Task<IActionResult> ConfigureFuelChannelAsync([FromBody] ConfigureFuelChannelRequest request, CancellationToken cancellationToken = default)
     {
@@ -70,5 +86,21 @@ public class GridCellController : ControllerBase
         var command = new ToggleFuelRodActivationCommand(request.ReactorGridId, request.X, request.Y);
         var status = await _mediator.Send(command, cancellationToken);
         return Ok($"Fuel rod {(status ? "activated" : "deactivated")}.");
+    }
+
+    [HttpPost("ToggleAllFuelRods")]
+    public async Task<IActionResult> ToggleAllFuelRodsAsync(int reactorGridId, CancellationToken cancellationToken = default)
+    {
+        var command = new ToggleAllFuelRodsCommand(reactorGridId);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("ScramReactor")]
+    public async Task<IActionResult> ScramReactorAsync(int reactorGridId)
+    {
+        var command = new ScramCommand(reactorGridId);
+        await _mediator.Send(command);
+        return Ok($"Reactor scrammed.");
     }
 }

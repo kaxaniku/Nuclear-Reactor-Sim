@@ -38,11 +38,9 @@ public class MoveControlRodCommandHandler : IRequestHandler<MoveControlRodComman
         if (request.TargetInsertionPercentage < 0 || request.TargetInsertionPercentage > 100)
             throw new ArgumentOutOfRangeException(nameof(request.TargetInsertionPercentage), "Target insertion percentage must be between 0 and 100.");
 
-        cell.Telemetry = new ControlRodsTelemetryDto
-        {
-            TargetInsertionPercentage = request.TargetInsertionPercentage / 100.0
-        };
+        telemetry.TargetInsertionPercentage = request.TargetInsertionPercentage / 100.0;
 
+        _unitOfWork.CellRepository.MarkModified(cell);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

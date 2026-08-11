@@ -15,12 +15,13 @@ public class SteamChannelTelemetryDto : CellTelemetry
     /// Range: 1.0 bar (Atmospheric) to 100.0+ bar (Overpressurized). Default: 70.0 bar (RBMK operational).
     /// </summary>
     public double TargetPressureBar { get; set; } = 70.0;
+    public double InletWaterTemperatureCelsius { get; set; } = 20.0;
 
     /// <summary>
     /// Main Circulation Pump (MCP) coolant intake throttling (0.0 = Valve Closed/No Flow, 1.0 = Max Flow).
     /// Lower flow causes water to dwell longer and superheat; higher flow keeps it subcooled/dense.
     /// </summary>
-    public double FlowRateThrottling { get; set; } = 1.0;
+    public double FlowRateThrottling { get; set; } = 0.3;
     public double SteamGenerationRateMW { get; set; }
     public double PressureBar { get; set; } = 70.0; // RBMK-1000 standard operational pressure
     public double SteamQuality { get; set; }        // Void fraction (0.0 = all liquid water, 1.0 = 100% steam)
@@ -55,8 +56,13 @@ public class SteamChannelTelemetryDto : CellTelemetry
         if (thermalEnergyInputMJ <= 0.0)
         {
             SteamGenerationRateMW = 0.0;
+
             double flushRate = 0.10 * FlowRateThrottling * deltaTimeSeconds;
             SteamQuality = Math.Max(0.0, SteamQuality - flushRate);
+
+            double coolingRate = 0.05 * FlowRateThrottling * deltaTimeSeconds;
+            TemperatureCelsius += (InletWaterTemperatureCelsius - TemperatureCelsius) * coolingRate;
+
             UpdateSteamType();
             return;
         }
@@ -99,7 +105,7 @@ public class SteamChannelTelemetryDto : CellTelemetry
             if (newQuality <= 1.0)
             {
                 // Coolant flow replenishment rate scales directly with flow throttling
-                double coolantReplacementRate = 0.15 * FlowRateThrottling * deltaTimeSeconds;
+                double coolantReplacementRate = 0.01 * FlowRateThrottling * deltaTimeSeconds;
                 SteamQuality = Math.Clamp(newQuality - coolantReplacementRate, 0.0, 1.0);
                 UpdateSteamType();
                 return;

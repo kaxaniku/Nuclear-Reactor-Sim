@@ -30,7 +30,7 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
 
     public void ProcessPhysicsTick(ReactorGrid grid, double deltaTimeSeconds)
     {
-        if (!grid.IsRunning || !grid.IsValid)
+        if (!grid.IsMonitored || !grid.IsValid)
         {
             return;
         }
@@ -264,6 +264,8 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
     double deltaTimeSeconds)
     {
         const double ThermalConductivity = 0.015;
+        const double AmbientVaultTempCelsius = 20.0;
+        const double AmbientCoolingCoeff = 0.0001;
         var energyTransfersMJ = new Dictionary<(int X, int Y), double>();
 
         // 1. Calculate Conduction Transfers
@@ -312,10 +314,20 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
                 double mass = GetCellMass(cell.ColumnType);
                 double cp = GetCellCp(cell.ColumnType);
 
-                // Apply ONLY the conduction gain/loss to the temperature already established by fission physics
+                // 1. Apply conduction energy exchange with adjacent cells
                 double deltaT = netConductionEnergyMJ / (mass * cp);
-                telemetry.TemperatureCelsius = Math.Max(20.0, telemetry.TemperatureCelsius + deltaT);
+                telemetry.TemperatureCelsius += deltaT;
             }
+
+            // 2. Apply passive ambient dissipation to ALL cells (Vault cooling)
+            double tempDeltaToVault = telemetry.TemperatureCelsius - AmbientVaultTempCelsius;
+            if (tempDeltaToVault > 0.0)
+            {
+                telemetry.TemperatureCelsius -= tempDeltaToVault * AmbientCoolingCoeff * deltaTimeSeconds;
+            }
+
+            // Clamp floor at ambient baseline
+            telemetry.TemperatureCelsius = Math.Max(AmbientVaultTempCelsius, telemetry.TemperatureCelsius);
         }
     }
 

@@ -40,12 +40,8 @@ public class ToggleFuelRodActivationHandler : IRequestHandler<ToggleFuelRodActiv
         else
             activate = true;
 
-        cell.Telemetry = new FuelChannelTelemetryDto
-        {
-            LocalPowerOutputMW = telemetry.LocalPowerOutputMW,
-            Status = telemetry.Status,
-            IsOnline = activate,
-        };
+        telemetry.IsOnline = activate;
+        _unitOfWork.CellRepository.MarkModified(cell);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return activate;
