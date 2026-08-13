@@ -25,6 +25,9 @@ public class MoveAllControlRodsCommandHandler : IRequestHandler<MoveAllControlRo
         var reactorGrid = grids.FirstOrDefault()
             ?? throw new KeyNotFoundException($"Reactor grid with ID {request.ReactorGridId} not found.");
 
+        if (reactorGrid.Cells.All(c => c.ColumnType != ColumnType.ControlRods))
+            throw new KeyNotFoundException($"No control rods found on specified reactor {request.ReactorGridId}.");
+
         foreach (var cell in reactorGrid.Cells.Where(cell => cell.ColumnType == ColumnType.ControlRods))
         {
             var telemetry = cell.Telemetry as ControlRodsTelemetryDto

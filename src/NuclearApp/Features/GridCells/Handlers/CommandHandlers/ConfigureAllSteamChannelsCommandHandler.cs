@@ -25,6 +25,10 @@ public class ConfigureAllSteamChannelsCommandHandler : IRequestHandler<Configure
         var reactorGrid = grids.FirstOrDefault()
             ?? throw new KeyNotFoundException($"Reactor grid with ID {request.ReactorGridId} not found.");
 
+
+        if (reactorGrid.Cells.All(c => c.ColumnType != ColumnType.SteamChannel))
+            throw new KeyNotFoundException($"No steam channels found on specified reactor {request.ReactorGridId}.");
+
         foreach (var cell in reactorGrid.Cells.Where(c => c.ColumnType == ColumnType.SteamChannel))
         {
             var telemetry = cell.Telemetry as SteamChannelTelemetryDto

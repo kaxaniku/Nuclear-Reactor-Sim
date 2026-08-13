@@ -25,6 +25,9 @@ public class ToggleAllFuelRodsHandler : IRequestHandler<ToggleAllFuelRodsCommand
         var reactorGrid = grids.FirstOrDefault()
             ?? throw new KeyNotFoundException($"Reactor grid with ID {request.ReactorGridId} not found.");
 
+        if (reactorGrid.Cells.All(c => c.ColumnType != ColumnType.FuelChannel))
+            throw new KeyNotFoundException($"No fuel channels found on specified reactor {request.ReactorGridId}.");
+
         foreach (var cell in reactorGrid.Cells.Where(c => c.ColumnType == ColumnType.FuelChannel))
         {
             var telemetry = cell.Telemetry as FuelChannelTelemetryDto
