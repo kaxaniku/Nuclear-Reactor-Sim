@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using NuclearApp.DTOs;
+using NuclearApp.Interfaces.Repositories;
 using NuclearDomain.Entities;
 
 namespace NuclearApp.Features.ReactorGrids;
@@ -13,3 +14,9 @@ public record DeleteCellCommand(int ReactorGridId, int X, int Y) : IRequest;
 public record CreateReactorCommand(string Name) : IRequest<ReactorGrid>;
 
 public record DeleteReactorCommand(int Id) : IRequest;
+
+public record SetReactorWatchStateCommand(int ReactorGridId, bool IsMonitored) : IRequest, IRequiresValidReactor;
+
+public record ResetReactorCommand(int ReactorGridId) : IRequest;
+
+public record ProcessReactorTickCommand(int ReactorGridId, double DeltaTimeSeconds) : IRequest;

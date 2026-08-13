@@ -23,7 +23,7 @@ namespace NuclearInfrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("NuclearDomain.DTOs.CellDto", b =>
+            modelBuilder.Entity("NuclearDomain.Entities.Cell", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -62,7 +62,7 @@ namespace NuclearInfrastructure.Migrations
                     b.ToTable("cells", (string)null);
                 });
 
-            modelBuilder.Entity("NuclearDomain.DTOs.ReactorGridDto", b =>
+            modelBuilder.Entity("NuclearDomain.Entities.ReactorGrid", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -70,6 +70,18 @@ namespace NuclearInfrastructure.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsMonitored")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_monitored");
+
+                    b.Property<bool>("IsRunning")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_running");
+
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_valid");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -84,7 +96,7 @@ namespace NuclearInfrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("total_rows");
 
-                    b.ComplexProperty(typeof(Dictionary<string, object>), "ActivityInfo", "NuclearDomain.DTOs.ReactorGridDto.ActivityInfo#ActivityInfo", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "ActivityInfo", "NuclearDomain.Entities.ReactorGrid.ActivityInfo#ActivityInfo", b1 =>
                         {
                             b1.IsRequired();
 
@@ -111,9 +123,9 @@ namespace NuclearInfrastructure.Migrations
                     b.ToTable("reactor_grids", (string)null);
                 });
 
-            modelBuilder.Entity("NuclearDomain.DTOs.CellDto", b =>
+            modelBuilder.Entity("NuclearDomain.Entities.Cell", b =>
                 {
-                    b.HasOne("NuclearDomain.DTOs.ReactorGridDto", "ReactorGrid")
+                    b.HasOne("NuclearDomain.Entities.ReactorGrid", "ReactorGrid")
                         .WithMany("Cells")
                         .HasForeignKey("ReactorGridId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -123,7 +135,7 @@ namespace NuclearInfrastructure.Migrations
                     b.Navigation("ReactorGrid");
                 });
 
-            modelBuilder.Entity("NuclearDomain.DTOs.ReactorGridDto", b =>
+            modelBuilder.Entity("NuclearDomain.Entities.ReactorGrid", b =>
                 {
                     b.Navigation("Cells");
                 });

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using NuclearApp.Interfaces.Repositories;
 using NuclearDomain.Entities;
+using NuclearDomain.Entities.Telemetries;
 
 namespace NuclearApp.Features.GridCells.Handlers.CommandHandlers;
 
@@ -33,10 +34,11 @@ public class ConfigureFuelChannelCommandHandler : IRequestHandler<ConfigureFuelC
         var telemetry = cell.Telemetry as FuelChannelTelemetryDto
             ?? throw new InvalidOperationException("Invalid telemetry type for fuel channel.");
 
+        if (telemetry.IsOnline)
+            throw new InvalidOperationException("Can not configure running fuel channel.");
+
         cell.Telemetry = new FuelChannelTelemetryDto
         {
-            NeutronFlux = request.NeutronFlux,
-            LocalPowerOutputMW = request.LocalPowerOutputMW,
             Status = request.Status
         };
 

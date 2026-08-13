@@ -146,6 +146,26 @@ public class ReactorGridController : ControllerBase
         return Ok(coordinates);
     }
 
+    [HttpPost("watch/{reactorId:int}")]
+    public async Task<IActionResult> WatchReactorAsync(int reactorId, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new SetReactorWatchStateCommand(reactorId, true), cancellationToken);
+        return Ok(new { Message = $"Reactor {reactorId} is now actively being monitored by the engine." });
+    }
+
+    [HttpPost("unwatch/{reactorId:int}")]
+    public async Task<IActionResult> UnwatchReactorAsync(int reactorId, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new SetReactorWatchStateCommand(reactorId, false), cancellationToken);
+        return Ok(new { Message = $"Stopped monitoring reactor {reactorId}." });
+    }
+
+    [HttpPost("resetReactor/{reactorId:int}")]
+    public async Task<IActionResult> ResetReactorAsync(int reactorId, CancellationToken cancellationToken = default)
+    {
+        await _mediator.Send(new ResetReactorCommand(reactorId), cancellationToken);
+        return NoContent();
+    }
     [HttpGet("validateReactor/{reactorId:int}")]
     public async Task<IActionResult> ValidateReactorAsync(int reactorId, CancellationToken cancellationToken = default)
     {

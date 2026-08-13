@@ -1,23 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace NuclearDomain.Entities;
-
-public enum SteamType
-{
-    Normal,         // 100C
-    Dense,          // 300C
-    SuperDense      // 450C
-}
-
-public enum FuelRodStatus
-{
-    Nominal,
-    Warning,
-    Scrammed,
-    Critical,
-    Meltdown
-}
+namespace NuclearDomain.Entities.Telemetries;
 
 [JsonDerivedType(typeof(CellTelemetry), typeDiscriminator: "base")]
 [JsonDerivedType(typeof(StructuralTelemetryDto), typeDiscriminator: "structural")]
@@ -31,6 +15,8 @@ public enum FuelRodStatus
 public class CellTelemetry
 {
     public double TemperatureCelsius { get; set; }   // Crucial for fuel and coolant channels
+    public double FastFlux { get; set; }
+    public double ThermalFlux { get; set; }
 }
 
 public class StructuralTelemetryDto : CellTelemetry
@@ -43,11 +29,6 @@ public class GraphiteModeratorTelemetryDto : CellTelemetry
     // No additional fields required beyond the base class
 }
 
-public class ControlRodsTelemetryDto : CellTelemetry
-{
-    public double InsertionLevel { get; set; }     // Percentage inserted 0.0 - 1.0
-}
-
 public class ReflectorTelemetryDto : CellTelemetry
 {
     // No additional fields required beyond the base class
@@ -55,26 +36,10 @@ public class ReflectorTelemetryDto : CellTelemetry
 
 public class AbsorberTelemetryDto : CellTelemetry
 {
-    public double AbsorptionLevel { get; set; }   // Percentage absorbed 0.0 - 1.0
 }
 
 public class CoolerTelemetryDto : CellTelemetry
 {
     public double WaterFlowRate { get; set; }       // Liters/sec through the individual channel
     public double CoolantLevelPercent { get; set; } // Percentage of coolant remaining (if needed)
-}
-
-public class SteamChannelTelemetryDto : CellTelemetry
-{
-    public double SteamGenerationRateMW { get; set; }
-    public double PressureBar { get; set; }
-    public double SteamQuality { get; set; }         // Percentage of water turned to steam (0.0 - 1.0)
-    public SteamType SteamType { get; set; }
-}
-
-public class FuelChannelTelemetryDto : CellTelemetry
-{
-    public double NeutronFlux { get; set; }       // neutron flux rate
-    public double LocalPowerOutputMW { get; set; }   // local thermal power generation
-    public FuelRodStatus Status { get; set; }
 }

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using NuclearApp.Interfaces.Repositories;
 using NuclearDomain.Entities;
+using NuclearDomain.Entities.Telemetries;
 
 namespace NuclearApp.Features.GridCells.Handlers.CommandHandlers;
 
@@ -33,18 +34,29 @@ public class ConfigureSteamChannelCommandHandler : IRequestHandler<ConfigureStea
         var telemetry = cell.Telemetry as SteamChannelTelemetryDto
             ?? throw new InvalidOperationException("Invalid telemetry type for steam channel.");
 
-        telemetry.SteamGenerationRateMW = request.SteamGenerationRateMW;
-        telemetry.PressureBar = request.PressureBar;
-        telemetry.SteamQuality = request.Quality;
-        telemetry.SteamType = request.Type;
-
-        cell.Telemetry = new SteamChannelTelemetryDto
+        switch (request.Type)
         {
-            SteamGenerationRateMW = request.SteamGenerationRateMW,
-            PressureBar = request.PressureBar,
-            SteamQuality = request.Quality,
-            SteamType = request.Type
-        };
+            case SteamType.Normal:
+                telemetry.TargetPressureBar = 1.0;
+                break;
+
+            case SteamType.Dense:
+                telemetry.TargetPressureBar = 70.0;
+                break;
+
+            case SteamType.Superheated:
+                telemetry.TargetPressureBar = 70.0;
+                break;
+
+            case SteamType.Supercritical:
+                telemetry.TargetPressureBar = 225.0;
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(request.Type), $"Unsupported steam type: {request.Type}");
+        }
+        telemetry.FlowRateThrottling = request.FlowRateThrottling;
+        _unitOfWork.CellRepository.MarkModified(cell);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }

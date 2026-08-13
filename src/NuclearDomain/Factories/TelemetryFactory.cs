@@ -1,6 +1,7 @@
 ﻿namespace NuclearDomain.Factories;
 
 using NuclearDomain.Entities;
+using NuclearDomain.Entities.Telemetries;
 
 public static class TelemetryFactory
 {
@@ -9,14 +10,14 @@ public static class TelemetryFactory
         ColumnType.FuelChannel => new FuelChannelTelemetryDto
         {
             TemperatureCelsius = 20.0, // Ambient starting temp
-            NeutronFlux = 0.0,
             LocalPowerOutputMW = 0.0,
-            Status = 0
+            Status = 0,
+            IsOnline = false
         },
         ColumnType.ControlRods => new ControlRodsTelemetryDto
         {
             TemperatureCelsius = 20.0,
-            InsertionLevel = 1.0 // Mandatory RBMK safety default: Fully inserted
+            CurrentInsertionPercentage = 1.0 // Mandatory RBMK safety default: Fully inserted
         },
         ColumnType.Cooler => new CoolerTelemetryDto
         {
@@ -30,12 +31,10 @@ public static class TelemetryFactory
             SteamGenerationRateMW = 0.0,
             PressureBar = 1.0,
             SteamQuality = 0.0,
-            SteamType = SteamType.Normal
         },
         ColumnType.Absorber => new AbsorberTelemetryDto
         {
             TemperatureCelsius = 20.0,
-            AbsorptionLevel = 1.0
         },
         ColumnType.GraphiteModerator => new GraphiteModeratorTelemetryDto { TemperatureCelsius = 20.0 },
         ColumnType.Reflector => new ReflectorTelemetryDto { TemperatureCelsius = 20.0 },

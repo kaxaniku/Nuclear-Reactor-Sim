@@ -32,18 +32,18 @@ public class GridCellController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("moveAllControlRods")]
+    public async Task<IActionResult> MoveAllControlRodsAsync([FromBody] MoveAllControlRodsRequest request)
+    {
+        var command = new MoveAllControlRodsCommand(request.ReactorGridId, request.TargetInsertionPercentage);
+        await _mediator.Send(command);
+        return NoContent();
+    }
+
     [HttpPost("setGraphiteModeratorTemperature")]
     public async Task<IActionResult> SetGraphiteModeratorTemperatureAsync([FromBody] SetGraphiteModeratorTemperatureRequest request, CancellationToken cancellationToken = default)
     {
         var command = new SetGraphiteModeratorTemperatureCommand(request.ReactorGridId, request.X, request.Y, request.TemperatureCelsius);
-        await _mediator.Send(command, cancellationToken);
-        return NoContent();
-    }
-
-    [HttpPost("setAbsorberAbsorptionLevel")]
-    public async Task<IActionResult> SetAbsorberAbsorptionLevelAsync([FromBody] SetAbsorberAbsorptionLevelRequest request, CancellationToken cancellationToken = default)
-    {
-        var command = new SetAbsorberAbsorptionLevelCommand(request.ReactorGridId, request.X, request.Y, request.AbsorptionLevelPercent);
         await _mediator.Send(command, cancellationToken);
         return NoContent();
     }
@@ -59,7 +59,15 @@ public class GridCellController : ControllerBase
     [HttpPost("configureSteamChannel")]
     public async Task<IActionResult> ConfigureSteamChannelAsync([FromBody] ConfigureSteamChannelRequest request, CancellationToken cancellationToken = default)
     {
-        var command = new ConfigureSteamChannelCommand(request.ReactorGridId, request.X, request.Y, request.SteamGenerationRateMW, request.PressureBar, request.Quality, request.Type);
+        var command = new ConfigureSteamChannelCommand(request.ReactorGridId, request.X, request.Y, request.Type, request.FlowRateThrottling);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("configureAllSteamChannels")]
+    public async Task<IActionResult> ConfigureAllSteamChannelsAsync([FromBody] ConfigureAllSteamChannelsRequest request, CancellationToken cancellationToken = default)
+    {
+        var command = new ConfigureAllSteamChannelsCommand(request.ReactorGridId, request.Type, request.FlowRateThrottling);
         await _mediator.Send(command, cancellationToken);
         return NoContent();
     }
@@ -67,8 +75,32 @@ public class GridCellController : ControllerBase
     [HttpPost("configureFuelChannel")]
     public async Task<IActionResult> ConfigureFuelChannelAsync([FromBody] ConfigureFuelChannelRequest request, CancellationToken cancellationToken = default)
     {
-        var command = new ConfigureFuelChannelCommand(request.ReactorGridId, request.X, request.Y, request.NeutronFlux, request.LocalPowerOutputMW, request.Status);
+        var command = new ConfigureFuelChannelCommand(request.ReactorGridId, request.X, request.Y, request.Status);
         await _mediator.Send(command, cancellationToken);
         return NoContent();
+    }
+
+    [HttpPost("ToggleFuelRodActivation")]
+    public async Task<IActionResult> ToggleFuelRodActivationAsync([FromBody] ToggleFuelRodActivationRequest request, CancellationToken cancellationToken = default)
+    {
+        var command = new ToggleFuelRodActivationCommand(request.ReactorGridId, request.X, request.Y);
+        var status = await _mediator.Send(command, cancellationToken);
+        return Ok($"Fuel rod {(status ? "activated" : "deactivated")}.");
+    }
+
+    [HttpPost("ToggleAllFuelRods")]
+    public async Task<IActionResult> ToggleAllFuelRodsAsync(int reactorGridId, CancellationToken cancellationToken = default)
+    {
+        var command = new ToggleAllFuelRodsCommand(reactorGridId);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("ScramReactor")]
+    public async Task<IActionResult> ScramReactorAsync(int reactorGridId)
+    {
+        var command = new ScramCommand(reactorGridId);
+        await _mediator.Send(command);
+        return Ok($"Reactor scrammed.");
     }
 }

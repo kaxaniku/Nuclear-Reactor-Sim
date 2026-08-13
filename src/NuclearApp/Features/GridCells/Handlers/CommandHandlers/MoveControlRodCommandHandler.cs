@@ -2,6 +2,7 @@
 using NuclearApp.DTOs;
 using NuclearApp.Interfaces.Repositories;
 using NuclearDomain.Entities;
+using NuclearDomain.Entities.Telemetries;
 
 namespace NuclearApp.Features.GridCells.Handlers.CommandHandlers;
 
@@ -37,11 +38,9 @@ public class MoveControlRodCommandHandler : IRequestHandler<MoveControlRodComman
         if (request.TargetInsertionPercentage < 0 || request.TargetInsertionPercentage > 100)
             throw new ArgumentOutOfRangeException(nameof(request.TargetInsertionPercentage), "Target insertion percentage must be between 0 and 100.");
 
-        cell.Telemetry = new ControlRodsTelemetryDto
-        {
-            InsertionLevel = request.TargetInsertionPercentage / 100.0
-        };
+        telemetry.TargetInsertionPercentage = request.TargetInsertionPercentage / 100.0;
 
+        _unitOfWork.CellRepository.MarkModified(cell);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
