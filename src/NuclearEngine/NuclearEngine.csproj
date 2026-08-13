@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\NuclearApp\NuclearApp.csproj" />
-    <ProjectReference Include="..\src\NuclearInfrastructure\NuclearInfrastructure.csproj" />
+    <ProjectReference Include="..\NuclearApp\NuclearApp.csproj" />
+    <ProjectReference Include="..\NuclearInfrastructure\NuclearInfrastructure.csproj" />
   </ItemGroup>
 </Project>

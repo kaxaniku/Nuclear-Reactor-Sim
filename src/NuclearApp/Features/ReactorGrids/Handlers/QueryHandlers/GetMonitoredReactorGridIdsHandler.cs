@@ -14,7 +14,6 @@ public class GetMonitoredReactorGridIdsHandler : IRequestHandler<GetMonitoredRea
 
     public async Task<List<int>> Handle(GetMonitoredReactorGridIdsQuery request, CancellationToken cancellationToken)
     {
-        // Query active/monitored grid IDs from the repository
         var monitoredGrids = await _unitOfWork.ReactorGridRepository.QueryAsync(
             g => g.IsMonitored,
             cancellationToken
