@@ -33,27 +33,24 @@ public class ConfigureAllSteamChannelsCommandHandler : IRequestHandler<Configure
             {
                 case SteamType.Normal:
                     telemetry.TargetPressureBar = 1.0;
-                    telemetry.FlowRateThrottling = 1.0;
                     break;
 
                 case SteamType.Dense:
                     telemetry.TargetPressureBar = 70.0;
-                    telemetry.FlowRateThrottling = 1.0;
                     break;
 
                 case SteamType.Superheated:
                     telemetry.TargetPressureBar = 70.0;
-                    telemetry.FlowRateThrottling = 0.25;
                     break;
 
                 case SteamType.Supercritical:
                     telemetry.TargetPressureBar = 225.0;
-                    telemetry.FlowRateThrottling = 0.8;
                     break;
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(request.Type), $"Unsupported steam type: {request.Type}");
             }
+            telemetry.FlowRateThrottling = request.FlowRateThrottling;
             _unitOfWork.CellRepository.MarkModified(cell);
         }
 

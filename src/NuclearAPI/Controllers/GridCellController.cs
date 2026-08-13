@@ -59,7 +59,7 @@ public class GridCellController : ControllerBase
     [HttpPost("configureSteamChannel")]
     public async Task<IActionResult> ConfigureSteamChannelAsync([FromBody] ConfigureSteamChannelRequest request, CancellationToken cancellationToken = default)
     {
-        var command = new ConfigureSteamChannelCommand(request.ReactorGridId, request.X, request.Y, request.Type);
+        var command = new ConfigureSteamChannelCommand(request.ReactorGridId, request.X, request.Y, request.Type, request.FlowRateThrottling);
         await _mediator.Send(command, cancellationToken);
         return NoContent();
     }
@@ -67,7 +67,7 @@ public class GridCellController : ControllerBase
     [HttpPost("configureAllSteamChannels")]
     public async Task<IActionResult> ConfigureAllSteamChannelsAsync([FromBody] ConfigureAllSteamChannelsRequest request, CancellationToken cancellationToken = default)
     {
-        var command = new ConfigureAllSteamChannelsCommand(request.ReactorGridId, request.Type);
+        var command = new ConfigureAllSteamChannelsCommand(request.ReactorGridId, request.Type, request.FlowRateThrottling);
         await _mediator.Send(command, cancellationToken);
         return NoContent();
     }

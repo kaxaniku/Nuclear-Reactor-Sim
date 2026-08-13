@@ -38,29 +38,24 @@ public class ConfigureSteamChannelCommandHandler : IRequestHandler<ConfigureStea
         {
             case SteamType.Normal:
                 telemetry.TargetPressureBar = 1.0;
-                telemetry.FlowRateThrottling = 1.0;
                 break;
 
             case SteamType.Dense:
                 telemetry.TargetPressureBar = 70.0;
-                telemetry.FlowRateThrottling = 1.0;
                 break;
 
             case SteamType.Superheated:
                 telemetry.TargetPressureBar = 70.0;
-                // Throttling coolant flow to 25% forces water to dwell long enough to reach 100% steam quality and superheat
-                telemetry.FlowRateThrottling = 0.25;
                 break;
 
             case SteamType.Supercritical:
-                telemetry.TargetPressureBar = 225.0; // Above critical point threshold (221.2 Bar)
-                telemetry.FlowRateThrottling = 0.8;
+                telemetry.TargetPressureBar = 225.0;
                 break;
 
             default:
                 throw new ArgumentOutOfRangeException(nameof(request.Type), $"Unsupported steam type: {request.Type}");
         }
-
+        telemetry.FlowRateThrottling = request.FlowRateThrottling;
         _unitOfWork.CellRepository.MarkModified(cell);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

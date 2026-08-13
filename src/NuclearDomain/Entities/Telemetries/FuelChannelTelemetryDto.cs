@@ -36,9 +36,9 @@ public class FuelChannelTelemetryDto : CellTelemetry
     private void EvaluateStatus()
     {
         if (Status == FuelRodStatus.Scrammed && TemperatureCelsius < 600.0)
-        {
             return;
-        }
+        if (Status == FuelRodStatus.Meltdown)
+            return;
 
         Status = TemperatureCelsius switch
         {

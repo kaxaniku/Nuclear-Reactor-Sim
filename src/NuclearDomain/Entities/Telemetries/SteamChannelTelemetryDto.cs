@@ -50,41 +50,47 @@ public class SteamChannelTelemetryDto : CellTelemetry
 
     public void ProcessCoolingAndSteam(double thermalEnergyInputMJ, double baseWaterMassKg, double deltaTimeSeconds)
     {
-        // Smoothly adjust current pressure toward target pressure driven by steam drum valves
+        // 1. Smoothly adjust current pressure toward target
         PressureBar += (TargetPressureBar - PressureBar) * Math.Min(1.0, deltaTimeSeconds * 0.5);
+
+        double targetSatTemp = TargetPhaseTemperatureCelsius;
+
+        // Mass flow through channel in Kg/sec driven by MCP throttling
+        // High flow replaces channel volume multiple times per second
+        double massFlowRateKgPerSec = baseWaterMassKg * FlowRateThrottling * 0.5;
+        double incomingColdWaterMassKg = massFlowRateKgPerSec * deltaTimeSeconds;
+
+        // 2. Cold Water Inflow Flushing (Mass Balance)
+        // Continuous cold water inflow dilutes existing steam quality and cools channel pool
+        if (incomingColdWaterMassKg > 0.0)
+        {
+            double replacementFraction = Math.Min(1.0, incomingColdWaterMassKg / baseWaterMassKg);
+
+            // Quality flushed out by fresh water intake
+            SteamQuality = Math.Max(0.0, SteamQuality * (1.0 - replacementFraction));
+
+            double convectiveCoolingRate = 0.15 * FlowRateThrottling * deltaTimeSeconds;
+            TemperatureCelsius += (InletWaterTemperatureCelsius - TemperatureCelsius) * convectiveCoolingRate;
+        }
 
         if (thermalEnergyInputMJ <= 0.0)
         {
             SteamGenerationRateMW = 0.0;
-
-            double flushRate = 0.10 * FlowRateThrottling * deltaTimeSeconds;
-            SteamQuality = Math.Max(0.0, SteamQuality - flushRate);
-
-            double coolingRate = 0.05 * FlowRateThrottling * deltaTimeSeconds;
-            TemperatureCelsius += (InletWaterTemperatureCelsius - TemperatureCelsius) * coolingRate;
-
             UpdateSteamType();
             return;
         }
 
-        // Effective water mass flow inside the channel adjusted by operator throttling
-        double effectiveWaterMassKg = Math.Max(1.0, baseWaterMassKg * FlowRateThrottling);
-
-        // 1. Sensible Heating
-        double targetSatTemp = TargetPhaseTemperatureCelsius;
-
+        // 3. Sensible Heating (Subcooled Liquid -> Saturation Temp)
         if (TemperatureCelsius < targetSatTemp)
         {
-            double energyNeededToBoil = effectiveWaterMassKg * WaterSpecificHeat * (targetSatTemp - TemperatureCelsius);
+            SteamQuality = 0.0;
+
+            double energyNeededToBoil = baseWaterMassKg * WaterSpecificHeat * (targetSatTemp - TemperatureCelsius);
 
             if (thermalEnergyInputMJ <= energyNeededToBoil)
             {
-                TemperatureCelsius += thermalEnergyInputMJ / (effectiveWaterMassKg * WaterSpecificHeat);
+                TemperatureCelsius += thermalEnergyInputMJ / (baseWaterMassKg * WaterSpecificHeat);
                 SteamGenerationRateMW = 0.0;
-
-                // High coolant flow flushes voids faster
-                double flushRate = 0.20 * FlowRateThrottling * deltaTimeSeconds;
-                SteamQuality = Math.Max(0.0, SteamQuality - flushRate);
                 UpdateSteamType();
                 return;
             }
@@ -93,31 +99,30 @@ public class SteamChannelTelemetryDto : CellTelemetry
             thermalEnergyInputMJ -= energyNeededToBoil;
         }
 
-        // 2. Latent Heat Phase Change
+        // 4. Latent Heat Phase Change (Boiling Water -> Wet Steam)
         if (SteamQuality < 1.0 && PressureBar < 221.2)
         {
             double latentHeat = LatentHeatVaporization;
             double steamProducedKg = thermalEnergyInputMJ / latentHeat;
 
             SteamGenerationRateMW = thermalEnergyInputMJ / deltaTimeSeconds;
-            double newQuality = SteamQuality + (steamProducedKg / effectiveWaterMassKg);
+            double qualityDelta = steamProducedKg / baseWaterMassKg;
 
-            if (newQuality <= 1.0)
+            if (SteamQuality + qualityDelta <= 1.0)
             {
-                // Coolant flow replenishment rate scales directly with flow throttling
-                double coolantReplacementRate = 0.01 * FlowRateThrottling * deltaTimeSeconds;
-                SteamQuality = Math.Clamp(newQuality - coolantReplacementRate, 0.0, 1.0);
+                SteamQuality += qualityDelta;
                 UpdateSteamType();
                 return;
             }
 
-            double unusedEnergyMJ = (newQuality - 1.0) * effectiveWaterMassKg * latentHeat;
+            // Channel completely dried out this frame; remaining energy superheats steam
+            double unusedEnergyMJ = (SteamQuality + qualityDelta - 1.0) * baseWaterMassKg * latentHeat;
             SteamQuality = 1.0;
             thermalEnergyInputMJ = unusedEnergyMJ;
         }
 
-        // 3. Superheating Phase
-        TemperatureCelsius += thermalEnergyInputMJ / (effectiveWaterMassKg * SteamSpecificHeat);
+        // 5. Superheating Phase (Dry Steam Gas Heating)
+        TemperatureCelsius += thermalEnergyInputMJ / (baseWaterMassKg * SteamSpecificHeat);
         SteamGenerationRateMW = thermalEnergyInputMJ / deltaTimeSeconds;
 
         UpdateSteamType();

@@ -14,7 +14,7 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
 
     // Core Feedback Coefficients
     private const double BaseKInfinitive = 1.05;        // Fresh 2.0% enriched UO2
-    private const double DopplerCoefficient = -0.00018; // -Δk per °C fuel rise
+    private const double DopplerCoefficient = -0.00027; // -Δk per °C fuel rise
     private const double VoidCoefficient = +0.00015;    // +Δk per % void
 
     // INCREASED: Allows realistic MW power generation from Thermal Flux
@@ -44,7 +44,7 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
         ProcessDiffusionAndNeutronChain(cellMap, controlRods, deltaTimeSeconds);
 
         // 3. Fuel Fission Power & Single-Source Thermal Heating
-        FuelChannelPhysics(cellMap, deltaTimeSeconds, controlRods);
+        FuelChannelPhysics(cellMap, deltaTimeSeconds);
 
         // 4. Spatial Conduction & Thermal-Hydraulic Phase Change
         ProcessConductionAndPhaseChange(cellMap, deltaTimeSeconds);
@@ -75,96 +75,95 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
         return controlRods;
     }
 
-    private static void ProcessDiffusionAndNeutronChain(
-    Dictionary<(int X, int Y), Cell> cellMap,
-    List<Cell> controlRods,
-    double deltaTimeSeconds)
+    private static void ProcessDiffusionAndNeutronChain(Dictionary<(int X, int Y), Cell> cellMap, List<Cell> controlRods, double deltaTimeSeconds)
     {
         var newFastFlux = new Dictionary<(int X, int Y), double>();
         var newThermalFlux = new Dictionary<(int X, int Y), double>();
 
-        // Pass 1: Retain un-diffused flux and handle spatial diffusion across neighbors
+        // Continuous spontaneous source floor per cell (e.g., U-238 spontaneous fission / photoneutrons)
+        const double SpontaneousSourceFloor = 0.5;
+
+        // Pass 1: Spatial Diffusion & Moderation/Absorption
         foreach (var ((x, y), cell) in cellMap)
         {
             if (cell.Telemetry is not CellTelemetry telemetry) continue;
 
-            // Leak rate scaled by time (10% fast, 8% thermal lost per second)
-            double fastLeak = telemetry.FastFlux * Math.Min(1.0, 0.10 * deltaTimeSeconds);
-            double thermalLeak = telemetry.ThermalFlux * Math.Min(1.0, 0.08 * deltaTimeSeconds);
+            // Diffusion rate: higher fraction migrates each second
+            double fastDiffusionFraction = Math.Min(0.80, 0.40 * deltaTimeSeconds);
+            double thermalDiffusionFraction = Math.Min(0.80, 0.30 * deltaTimeSeconds);
 
-            // Keep local un-diffused portion
-            AddDelta(newFastFlux, (x, y), telemetry.FastFlux - fastLeak);
-            AddDelta(newThermalFlux, (x, y), telemetry.ThermalFlux - thermalLeak);
+            double fastLeaving = telemetry.FastFlux * fastDiffusionFraction;
+            double thermalLeaving = telemetry.ThermalFlux * thermalDiffusionFraction;
 
-            double outgoingFast = fastLeak / 4.0;
-            double outgoingThermal = thermalLeak / 4.0;
+            // Retain un-diffused flux in the current cell
+            AddDelta(newFastFlux, (x, y), telemetry.FastFlux - fastLeaving);
+            AddDelta(newThermalFlux, (x, y), telemetry.ThermalFlux - thermalLeaving);
+
+            double outgoingFastPerNeighbor = fastLeaving / 4.0;
+            double outgoingThermalPerNeighbor = thermalLeaving / 4.0;
 
             foreach (var (dx, dy) in Directions)
             {
                 var neighborPos = (x + dx, y + dy);
                 if (!cellMap.TryGetValue(neighborPos, out var neighborCell))
-                    continue;
-
-                bool isSourceGraphite = cell.ColumnType == ColumnType.GraphiteModerator;
+                    continue; // Boundary loss (outer leakage)
 
                 switch (neighborCell.ColumnType)
                 {
                     case ColumnType.GraphiteModerator:
-                        // Any fast flux entering graphite (from fuel, reflector, or another graphite block) thermalizes
-                        AddDelta(newThermalFlux, neighborPos, outgoingFast * 0.95);
-                        AddDelta(newThermalFlux, neighborPos, outgoingThermal * 0.95);
+                        // Graphite moderates fast neutrons into thermal neutrons efficiently
+                        AddDelta(newThermalFlux, neighborPos, outgoingFastPerNeighbor * 0.98);
+                        AddDelta(newThermalFlux, neighborPos, outgoingThermalPerNeighbor * 0.98);
                         break;
 
                     case ColumnType.FuelChannel:
-                        if (isSourceGraphite)
-                        {
-                            // Flux coming out of graphite into fuel enters as thermal flux
-                            AddDelta(newThermalFlux, neighborPos, outgoingFast * 0.95);
-                            AddDelta(newThermalFlux, neighborPos, outgoingThermal * 0.90);
-                        }
-                        else
-                        {
-                            // Direct fuel-to-fuel or control-to-fuel transfer retains fast/thermal split
-                            AddDelta(newFastFlux, neighborPos, outgoingFast * 0.80);
-                            AddDelta(newThermalFlux, neighborPos, outgoingThermal * 0.80);
-                        }
+                        // Fuel accepts fast and thermal flux directly
+                        AddDelta(newFastFlux, neighborPos, outgoingFastPerNeighbor * 0.95);
+                        AddDelta(newThermalFlux, neighborPos, outgoingThermalPerNeighbor * 0.95);
                         break;
 
                     case ColumnType.Reflector:
-                        AddDelta(newFastFlux, (x, y), outgoingFast * 0.85);
-                        AddDelta(newThermalFlux, (x, y), outgoingThermal * 0.85);
-                        AddDelta(newThermalFlux, (x, y), outgoingFast * 0.10);
+                        // Bounces flux back to the source cell (reflection)
+                        AddDelta(newFastFlux, (x, y), outgoingFastPerNeighbor * 0.90);
+                        AddDelta(newThermalFlux, (x, y), outgoingThermalPerNeighbor * 0.90);
                         break;
 
                     case ColumnType.ControlRods:
                         if (neighborCell.Telemetry is ControlRodsTelemetryDto rod)
                         {
                             double absorption = Math.Clamp(rod.CurrentInsertionPercentage / 100.0, 0.0, 1.0);
-                            double passedThermal = outgoingThermal * (1.0 - absorption);
+                            double passedThermal = outgoingThermalPerNeighbor * (1.0 - absorption);
+                            double passedFast = outgoingFastPerNeighbor * (1.0 - (absorption * 0.85));
 
-                            // If source was graphite, fast neutrons were also moderated before hitting the rod
-                            if (isSourceGraphite)
-                            {
-                                passedThermal += (outgoingFast * 0.95) * (1.0 - absorption);
-                            }
-                            else
-                            {
-                                AddDelta(newFastFlux, neighborPos, outgoingFast * 0.80);
-                            }
-
+                            AddDelta(newFastFlux, neighborPos, passedFast);
                             AddDelta(newThermalFlux, neighborPos, passedThermal);
                         }
                         break;
 
                     default:
-                        AddDelta(newFastFlux, neighborPos, outgoingFast * 0.80);
-                        AddDelta(newThermalFlux, neighborPos, outgoingThermal * 0.80);
+                        AddDelta(newFastFlux, neighborPos, outgoingFastPerNeighbor * 0.90);
+                        AddDelta(newThermalFlux, neighborPos, outgoingThermalPerNeighbor * 0.90);
                         break;
                 }
             }
         }
 
-        // Pass 2: Fission Chain Reaction in Fuel Channels
+        // Pass 1.5: Control Rod Internal Sink Destruction
+        foreach (var rodCell in controlRods)
+        {
+            if (rodCell.Telemetry is ControlRodsTelemetryDto rod)
+            {
+                double absorption = Math.Clamp(rod.CurrentInsertionPercentage / 100.0, 0.0, 1.0);
+                var pos = (rodCell.X, rodCell.Y);
+
+                if (newThermalFlux.TryGetValue(pos, out double currentThermal))
+                    newThermalFlux[pos] = currentThermal * (1.0 - absorption);
+                if (newFastFlux.TryGetValue(pos, out double currentFast))
+                    newFastFlux[pos] = currentFast * (1.0 - (absorption * 0.85));
+            }
+        }
+
+        // Pass 2: Fission Chain Reaction & Moderation in Fuel Channels
         foreach (var ((x, y), cell) in cellMap)
         {
             if (cell.ColumnType == ColumnType.FuelChannel && cell.Telemetry is FuelChannelTelemetryDto fuel)
@@ -178,29 +177,37 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
                 double deltaKVoid = nearbyVoidFraction * VoidCoefficient * 100.0;
                 double localK = BaseKInfinitive + deltaKDoppler + deltaKVoid;
 
-                // 1. Get raw thermal flux entering cell
-                double currentThermalInCell = newThermalFlux.GetValueOrDefault((x, y), 0.0);
+                // 1. Fetch current pools
+                double fastPool = newFastFlux.GetValueOrDefault((x, y), 0.0);
+                double thermalPool = newThermalFlux.GetValueOrDefault((x, y), 0.0);
 
-                // 2. Ensure minimal seed for cold startup
-                double effectiveThermal = Math.Max(currentThermalInCell, 20.0);
+                // 2. Local Moderation (Fast -> Thermal)
+                double FastToThermalRate = Math.Min(1.0, 0.50 * deltaTimeSeconds);
+                double moderatedFast = fastPool * FastToThermalRate;
 
-                // If we seeded artificially, make sure the cell dictionary reflects the seed baseline
-                if (currentThermalInCell < 20.0)
-                {
-                    newThermalFlux[(x, y)] = 20.0;
-                }
+                fastPool -= moderatedFast;
+                thermalPool += moderatedFast;
 
-                // 3. Absorption & Fission
-                double thermalAbsorbed = effectiveThermal * Math.Min(1.0, 0.25 * deltaTimeSeconds);
-                double fissionFastFlux = thermalAbsorbed * localK * 2.0;
+                // 3. Spontaneous background source floor
+                thermalPool = Math.Max(thermalPool, SpontaneousSourceFloor);
 
-                // 4. Update flux pools
-                AddDelta(newThermalFlux, (x, y), -thermalAbsorbed);
-                AddDelta(newFastFlux, (x, y), fissionFastFlux);
+                // 4. Fission (Thermal absorbed -> Fast generated)
+                double absorptionRate = Math.Min(1.0, 0.60 * deltaTimeSeconds);
+                double thermalAbsorbed = thermalPool * absorptionRate;
+
+                // Fission generates NEW fast neutrons based on localK
+                double fissionFastGenerated = thermalAbsorbed * localK * 2;
+
+                thermalPool -= thermalAbsorbed;
+                fastPool += fissionFastGenerated;
+
+                // 5. Write back exact updated values
+                newFastFlux[(x, y)] = fastPool;
+                newThermalFlux[(x, y)] = thermalPool;
             }
         }
 
-        // Apply updated flux levels to telemetry state
+        // Synchronize calculated flux pools back to cell telemetry
         foreach (var ((x, y), cell) in cellMap)
         {
             if (cell.Telemetry is CellTelemetry t)
@@ -212,9 +219,8 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
     }
 
     private static void FuelChannelPhysics(
-        Dictionary<(int X, int Y), Cell> cellMap,
-        double deltaTimeSeconds,
-        List<Cell> controlRods)
+    Dictionary<(int X, int Y), Cell> cellMap,
+    double deltaTimeSeconds)
     {
         foreach (var ((x, y), cell) in cellMap)
         {
@@ -228,32 +234,13 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
                 continue;
             }
 
-            // Calculate total control rod suppression within InfluenceRadius
-            double totalSuppression = 0.0;
-            foreach (var rodCell in controlRods)
-            {
-                if (rodCell.Telemetry is ControlRodsTelemetryDto rodTelemetry)
-                {
-                    double dx = cell.X - rodCell.X;
-                    double dy = cell.Y - rodCell.Y;
-                    double distance = Math.Sqrt(dx * dx + dy * dy);
-
-                    if (distance <= InfluenceRadius)
-                    {
-                        double proximityFactor = 1.0 - (distance / InfluenceRadius);
-                        totalSuppression += rodTelemetry.CurrentInsertionPercentage * proximityFactor;
-                    }
-                }
-            }
-
-            // Suppress effective thermal flux driving fission power
-            double effectiveThermalFlux = Math.Max(0.0, fuelTelemetry.ThermalFlux * (1.0 - Math.Clamp(totalSuppression, 0.0, 1.0)));
-            fuelTelemetry.LocalPowerOutputMW = effectiveThermalFlux * FluxToMWFactor;
+            // Direct, unified single-source of power generation:
+            fuelTelemetry.LocalPowerOutputMW = fuelTelemetry.ThermalFlux * FluxToMWFactor;
 
             // Thermal energy generated (MJ = MW * seconds)
             double thermalEnergyGeneratedMJ = fuelTelemetry.LocalPowerOutputMW * deltaTimeSeconds;
 
-            // Single source of heating truth
+            // Apply temperature rise
             double deltaT = thermalEnergyGeneratedMJ / (FuelMassKg * FuelCp);
             fuelTelemetry.TemperatureCelsius += deltaT;
         }
@@ -263,7 +250,7 @@ public class ReactorPhysicsEngine : IReactorPhysicsEngine
     Dictionary<(int X, int Y), Cell> cellMap,
     double deltaTimeSeconds)
     {
-        const double ThermalConductivity = 0.015;
+        const double ThermalConductivity = 0.03;
         const double AmbientVaultTempCelsius = 20.0;
         const double AmbientCoolingCoeff = 0.0001;
         var energyTransfersMJ = new Dictionary<(int X, int Y), double>();

@@ -6,4 +6,5 @@ public class ConfigureAllSteamChannelsRequest
 {
     public int ReactorGridId { get; set; }
     public SteamType Type { get; set; }
+    public double FlowRateThrottling { get; set; }
 }

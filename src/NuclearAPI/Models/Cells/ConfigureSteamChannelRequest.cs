@@ -8,4 +8,5 @@ public class ConfigureSteamChannelRequest
     public int X { get; set; }
     public int Y { get; set; }
     public SteamType Type { get; set; }
+    public double FlowRateThrottling { get; set; }
 }
