@@ -21,9 +21,10 @@ The project simulates the complex physical dynamics of an RBMK-1000 nuclear reac
 
 The system separates physics calculations from application workflows using a clean layered architecture:
 
+```text
        +--------------------+               +--------------------+
        |  REST Controllers  |               | Background Worker  |
-       |  (Web API Layer)   |               | (PeriodicTimer)    |
+       |  (Web API Layer)   |               |  (PeriodicTimer)   |
        +--------------------+               +--------------------+
                  |                                    |
                  +-----------------+------------------+
@@ -53,3 +54,4 @@ The system separates physics calculations from application workflows using a cle
 |                                                                 |
 |              IUnitOfWork  <--->  IReactorGridRepository         |
 +-----------------------------------------------------------------+
+```
